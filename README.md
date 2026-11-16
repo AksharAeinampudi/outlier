@@ -48,6 +48,12 @@ node tools/test-prompts.cjs
 
 The import script keeps the previous data for any category whose Wikidata query times out.
 
+## License
+
+Copyright © 2026 Akshar Aeinampudi. All rights reserved.
+
+You're welcome to play the game and read the code here, but no license is granted to copy, modify or redistribute it. The Wikidata-sourced data in `opendata.js` remains available under CC0.
+
 ## Credits
 
 - Extra answers come from [Wikidata](https://www.wikidata.org), available under [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
