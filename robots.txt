@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aksharaeinampudi.github.io/outlier/sitemap.xml

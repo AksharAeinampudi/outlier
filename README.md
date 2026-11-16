@@ -1,35 +1,41 @@
 # Outlier
 
-A free daily word game. Each round gives you seven prompts and 25 seconds per prompt. Name something correct that few people would think of: obvious answers barely leave the launch pad, rare ones carry your rocket toward the Moon.
+**A free daily word game.** Seven prompts, 25 seconds each. Name something correct that few people would think of: obvious answers barely leave the launch pad, rare ones carry your rocket to the Moon.
 
-**Play:** https://aksharaeinampudi.github.io/outlier/
+### ▶ [Play Outlier](https://aksharaeinampudi.github.io/outlier/)
 
-Also hosted as a Claude artifact, where shared player-data rarity is available: https://claude.ai/artifact/81AB3qdr3uYPWTEt7Aevq9
+No sign-up, no ads, no paywall. Works on desktop and phone.
+
+[![Outlier: a rocket on the launch pad beside the game's home screen](assets/screenshot.png)](https://aksharaeinampudi.github.io/outlier/)
 
 ## How it plays
 
+- **Prompts like** "Name a country with the letter K in its name", "Name something with teeth that isn't an animal" or "Name a river that starts with B".
 - **Scoring:** Common +1, Uncommon +4, Rare +7, Long shot +10. A perfect 70 lands on the Moon.
 - **Retries:** if an answer isn't in the list, try again. The clock keeps running.
-- **Typos:** small typos, plurals and common alternate names are accepted.
-- **Rounds:** each round mixes 3 constraint prompts ("…with the letter K in its name"), 2 twist prompts ("Name something that comes in pairs") and 2 classic categories.
-- **Daily launch:** everyone gets the same prompts each day. Prompts are dealt like a shuffled deck, so they rarely repeat.
-- **Free play:** unlimited free flights, past launches, and themed packs. No paywall.
-- **Player data:** when hosted as a Claude artifact, rarity switches to real player answers once a prompt has 15 of them.
+- **Forgiving matching:** small typos, plurals, short names ("Amazon" for the Amazon River) and alternate names ("Alsatian" for German Shepherd) all count.
+- **Daily launch:** everyone gets the same seven prompts each day, dealt like a shuffled deck so they rarely repeat.
+- **Free play:** unlimited free flights, past launches, and nine themed packs.
+- **Share your score** as a spoiler-free grid of squares.
+
+There are 1,300+ prompts: hand-written twists, classic categories, and constraint prompts built from 80+ answer lists.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `outlier.html` | The whole game: prompts, matching, scoring, rendering. |
+| `index.html` | The whole game: prompts, matching, scoring, rendering. |
 | `opendata.js` | Extra answers and rarity estimates generated from Wikidata. The game still runs without it, with fewer categories. |
 | `tools/build-opendata.mjs` | Rebuilds `opendata.js` from the Wikidata Query Service. |
 | `tools/test-prompts.cjs` | Checks the prompt bank, answer matching and a year of daily picks. |
+| `assets/` | Screenshot and social preview image. |
+| `outlier.html` | Redirect for old links. |
 
 ## Running it locally
 
-Open `outlier.html` in a browser. Keep `opendata.js` in the same folder.
+Open `index.html` in a browser, with `opendata.js` in the same folder. Stats and streaks are stored in your browser's local storage.
 
-Stats and streaks are stored in the browser's local storage. The shared player-data feature only works when the page runs as a Claude artifact; elsewhere the game uses its built-in rarity ratings.
+The game is also published as a [Claude artifact](https://claude.ai/artifact/81AB3qdr3uYPWTEt7Aevq9), where rarity switches to real player answers once a prompt has 15 of them. Everywhere else it uses its built-in rarity ratings.
 
 ## Updating the data
 

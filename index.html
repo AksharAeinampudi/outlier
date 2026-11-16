@@ -1,14 +1,1369 @@
 <!doctype html>
 <html lang="en">
-<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Outlier</title>
-<meta http-equiv="refresh" content="0; url=outlier.html">
-<link rel="canonical" href="outlier.html">
-<style>body{background:#03040c;color:#eaf0ff;font:16px system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}a{color:#ffd166}</style>
-</head>
-<body>
-<p>Launching Outlier… <a href="outlier.html">Tap here if nothing happens.</a></p>
-</body>
-</html>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Search and sharing: description, canonical address, social cards, structured data -->
+<meta name="description" content="Outlier is a free daily word game. Seven prompts, 25 seconds each: name something correct that few people would think of. Rare answers launch your rocket from the pad to the Moon. 1,300+ prompts, themed packs, no sign-up.">
+<meta name="keywords" content="daily word game, trivia game, rare answers, word puzzle, browser game, free online game, daily puzzle, categories game">
+<link rel="canonical" href="https://aksharaeinampudi.github.io/outlier/">
+<meta name="theme-color" content="#03040C">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Outlier">
+<meta property="og:title" content="Outlier: the daily rare-answer word game">
+<meta property="og:description" content="Seven prompts, 25 seconds each. Obvious answers barely leave the pad; rare ones take you to the Moon. Free, no sign-up.">
+<meta property="og:url" content="https://aksharaeinampudi.github.io/outlier/">
+<meta property="og:image" content="https://aksharaeinampudi.github.io/outlier/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Outlier: a rocket on the launch pad beside the game's home screen">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Outlier: the daily rare-answer word game">
+<meta name="twitter:description" content="Seven prompts, 25 seconds each. Rare answers launch your rocket to the Moon. Free, no sign-up.">
+<meta name="twitter:image" content="https://aksharaeinampudi.github.io/outlier/assets/social-preview.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2303040C'/%3E%3Cpath d='M32 8c8 8 10 18 10 28H22c0-10 2-20 10-28z' fill='%23F2F4FA'/%3E%3Cpath d='M22 36l-8 12 8-2zM42 36l8 12-8-2z' fill='%23FF8F3F'/%3E%3Cpath d='M26 46h12l-6 12z' fill='%23FFD166'/%3E%3Ccircle cx='32' cy='26' r='4' fill='%231A2A5E'/%3E%3C/svg%3E">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"Outlier","url":"https://aksharaeinampudi.github.io/outlier/",
+ "description":"A free daily word game: name correct answers few people would think of. Rare answers launch your rocket from the launch pad to the Moon.",
+ "genre":["Word game","Trivia","Puzzle"],"gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any",
+ "isAccessibleForFree":true,"inLanguage":"en","image":"https://aksharaeinampudi.github.io/outlier/assets/social-preview.png",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-screen sky canvas the rocket climbs through; one glass flight panel (right column on wide, bottom sheet on phones); HUD strip on top. Single committed night-launch look. */
+:root{
+  --ink:#EAF0FF; --muted:#9AA8CC; --panel:rgba(8,13,32,.88); --panel-2:rgba(255,255,255,.05);
+  --line:rgba(170,190,255,.18); --flame:#FF8F3F; --flame-2:#FFD166; --deep:#03040C;
+  --t-c:#A9B6D6; --t-u:#5FD3B4; --t-r:#FFD166; --t-x:#FF6F91; --t-miss:#5B6585;
+  --display:"Chakra Petch", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+  --body:"Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--deep);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;overflow:hidden}
+#sky{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.mark{font-family:var(--display);font-weight:700;letter-spacing:.32em;font-size:14px;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+.readouts{display:flex;gap:8px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 10px;min-width:84px;text-align:right}
+.ro b{display:block;font-family:var(--display);font-size:17px;font-variant-numeric:tabular-nums;line-height:1.2}
+.ro span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+#panel{position:fixed;z-index:6;top:50%;transform:translateY(-50%);right:max(24px,env(safe-area-inset-right,0px));
+  width:min(440px,calc(100vw - 48px));max-height:calc(100% - 140px);overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+@media (max-width:760px){
+  #panel{top:auto;transform:none;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));
+    bottom:max(12px,env(safe-area-inset-bottom,0px));width:auto;max-height:60%;padding:18px}
+  .ro{min-width:70px}
+}
+h1{font-family:var(--display);font-weight:700;font-size:44px;letter-spacing:.14em;line-height:1;margin:0}
+h2{font-family:var(--display);font-weight:600;font-size:26px;line-height:1.2;margin:0;text-wrap:balance}
+.eyebrow{font-family:var(--display);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--flame-2)}
+.lede{color:var(--muted);margin:10px 0 0;max-width:60ch}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);padding:11px 16px;font-weight:600}
+button:hover{background:rgba(255,255,255,.1)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--flame-2);outline-offset:2px}
+.primary{background:linear-gradient(180deg,var(--flame-2),var(--flame));color:#1b0e02;border:0;font-family:var(--display);letter-spacing:.08em;text-transform:uppercase;font-size:15px}
+.primary:hover{filter:brightness(1.07);background:linear-gradient(180deg,var(--flame-2),var(--flame))}
+.wide{width:100%}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel-2);border-radius:10px;padding:8px 10px}
+.stat b{font-family:var(--display);font-size:20px;display:block;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.06em}
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+.rules{margin:10px 0 0;padding-left:18px;color:var(--muted)}
+.rules li{margin:4px 0}
+.packs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.packs button{text-align:left;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.packs b{font-family:var(--display);font-weight:600;font-size:14px}
+.packs small{font-size:11px;color:var(--muted);font-weight:500}
+.packs button:hover{border-color:color-mix(in srgb,var(--flame-2) 50%,transparent)}
+.archive{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin-top:10px}
+.archive button{padding:8px 0;font-family:var(--display);font-size:13px}
+.archive button.done{color:var(--muted)}
+.archive small{display:block;font-size:10px;color:var(--t-u);font-weight:500}
+.prompt{font-family:var(--display);font-weight:600;font-size:28px;line-height:1.2;margin:4px 0 0;text-wrap:balance}
+.timer{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.timer i{display:block;height:100%;background:linear-gradient(90deg,var(--flame),var(--flame-2));transform-origin:left;width:100%}
+.timer.low i{background:var(--t-x)}
+.tline{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.answer{display:flex;gap:8px}
+.answer input{flex:1;min-width:0;font:inherit;font-size:18px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--ink)}
+.answer input::placeholder{color:#66729A}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fb{border-radius:12px;padding:14px;background:var(--panel-2);border:1px solid var(--line)}
+.fbtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:99px;border:1px solid currentColor}
+.pts{font-family:var(--display);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.c{color:var(--t-c)}.u{color:var(--t-u)}.r{color:var(--t-r)}.x{color:var(--t-x)}.miss,.time{color:var(--t-miss)}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.note b{color:var(--ink);font-weight:500}
+.result-alt{font-family:var(--display);font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.log{display:flex;flex-direction:column;gap:6px}
+.log div{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 10px;background:var(--panel-2);border-radius:8px;font-size:13px}
+.log em{font-style:normal;color:var(--muted);grid-column:1}
+.log strong{grid-row:1 / span 2;grid-column:2;align-self:center;font-family:var(--display);font-size:18px}
+.share{width:100%;min-height:90px;resize:none;font:13px/1.5 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.35);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:currentColor;margin-right:6px}
+/* Motion: screens stagger in, feedback pops, results cascade, the panel eases between sizes */
+#panel{transition:max-height .35s ease}
+.screen>*{animation:rise .46s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(var(--i,0) * 60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.fb{animation:pop .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:.12s}
+.fb-x{border-color:color-mix(in srgb,var(--t-x) 55%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--t-x) 25%,transparent),0 0 28px color-mix(in srgb,var(--t-x) 22%,transparent)}
+.fb-r{border-color:color-mix(in srgb,var(--t-r) 45%,transparent)}
+.fb .chip{animation:pop .45s cubic-bezier(.2,1.6,.4,1) both;animation-delay:.3s}
+@keyframes pop{from{opacity:0;transform:scale(.92)}}
+.log div{animation:rise .4s ease both;animation-delay:calc(var(--j,0) * 80ms + 250ms)}
+.tries{margin:0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--t-x) 12%,transparent);border:1px solid color-mix(in srgb,var(--t-x) 35%,transparent);color:var(--ink)}
+.tries .tried{color:var(--muted)}
+.pop{animation:pop .3s cubic-bezier(.2,1.5,.4,1)}
+.timer i{transition:background-color .3s}
+.timer.low{animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+button{transition:transform .12s ease,background-color .2s ease,filter .2s ease}
+button:active{transform:scale(.97)}
+.answer input{transition:border-color .2s ease,box-shadow .2s ease}
+.answer input:focus{border-color:color-mix(in srgb,var(--flame-2) 60%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--flame) 20%,transparent);outline:none}
+#panel{animation:panelIn .6s cubic-bezier(.2,.75,.25,1) both}
+@keyframes panelIn{from{opacity:0;translate:0 24px}}
+@media (prefers-reduced-motion:reduce){.shake,.screen>*,.fb,.fb .chip,.log div,.pop,.timer.low,#panel{animation:none!important}button:active{transform:none}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="hud">
+  <div class="mark">OUTLIER</div>
+  <div class="readouts">
+    <div class="ro"><b id="alt">0 km</b><span>Altitude</span></div>
+    <div class="ro"><b id="score">0</b><span>Score</span></div>
+  </div>
+</div>
+<main id="panel" aria-live="polite"></main>
+<!-- Extra answers and rarity estimates from Wikidata (CC0), built by tools/build-opendata.mjs. The game still works if this file is missing. -->
+<script src="opendata.js"></script>
+
+<script>
+/* ---------------- Prompt bank: [prompt, common, uncommon, rare, long shot]. "|" separates accepted spellings. ---------------- */
+const BANK = [
+["Name a fruit",
+"apple,banana,orange,strawberry,grape,mango,watermelon,pineapple,cherry,peach",
+"pear,kiwi|kiwifruit,blueberry,lemon,lime,plum,raspberry,coconut,papaya,apricot,pomegranate,cantaloupe,grapefruit,blackberry,avocado,nectarine,tangerine|mandarin,honeydew,cranberry,clementine,fig",
+"lychee|litchi,passion fruit,guava,persimmon,dragon fruit|pitaya,quince,kumquat,starfruit|carambola,jackfruit,durian,rambutan,mangosteen,gooseberry,elderberry,date,tamarind,mulberry,boysenberry,currant|blackcurrant|redcurrant,olive,tomato,plantain,yuzu,longan,huckleberry,lingonberry,breadfruit,acai,soursop|guanabana,pomelo",
+"medlar,cloudberry,jabuticaba,salak|snake fruit,sapodilla,kiwano|horned melon,cherimoya|custard apple,miracle fruit|miracle berry,pawpaw,loquat,feijoa,ugli fruit,bilberry,marionberry,physalis|ground cherry|cape gooseberry,rose apple,santol,mamey,bael,ackee,buddhas hand,finger lime,tamarillo,naranjilla,cupuacu"],
+["Name a country in Europe",
+"france,germany,italy,spain,united kingdom|uk|england|britain|great britain,portugal,greece,ireland",
+"netherlands|holland,belgium,switzerland,austria,sweden,norway,denmark,finland,poland,russia,ukraine,iceland,scotland,wales,czech republic|czechia,hungary,croatia,turkey",
+"romania,bulgaria,serbia,slovakia,slovenia,estonia,latvia,lithuania,belarus,luxembourg,monaco,albania,bosnia and herzegovina|bosnia,montenegro,north macedonia|macedonia,moldova,malta,cyprus,northern ireland",
+"liechtenstein,andorra,san marino,vatican city|vatican|holy see,kosovo,georgia,armenia,azerbaijan,kazakhstan,faroe islands"],
+["Name an animal that lives in the ocean",
+"shark,whale,dolphin,octopus,fish,jellyfish,starfish|sea star,crab,turtle|sea turtle",
+"seal,squid,lobster,stingray|ray|manta ray,orca|killer whale,blue whale,clownfish,sea lion,walrus,seahorse,eel,shrimp,tuna,sea urchin,clam,oyster,penguin,humpback whale,hammerhead shark,great white shark,coral,sea otter|otter,salmon,swordfish,manatee",
+"narwhal,beluga,anglerfish,barracuda,pufferfish|blowfish,sea cucumber,cuttlefish,nautilus,mussel,scallop,krill,plankton,barnacle,sea anemone|anemone,marlin,sailfish,dugong,moray eel,lionfish,nudibranch|sea slug,hermit crab,sardine,anchovy,cod,halibut,mackerel,grouper,sunfish|mola,whale shark,sperm whale,albatross,leopard seal,elephant seal,flounder,mantis shrimp,porpoise",
+"siphonophore,lancetfish,oarfish,hagfish,vampire squid,blobfish,frilled shark,goblin shark,coelacanth,sea pen,pteropod|sea butterfly,copepod,giant isopod|isopod,sea spider,chimaera|ratfish,dumbo octopus,barreleye,gulper eel,viperfish,lanternfish,remora,wobbegong,sea pig,sea squirt|tunicate,salp,hatchetfish,cookiecutter shark"],
+["Name a US state",
+"california,texas,florida,new york,hawaii,alaska,washington",
+"arizona,nevada,colorado,ohio,michigan,illinois,georgia,oregon,massachusetts,virginia,pennsylvania,new jersey,utah,tennessee,louisiana,north carolina",
+"montana,idaho,wyoming,kansas,nebraska,iowa,missouri,minnesota,wisconsin,indiana,kentucky,alabama,mississippi,arkansas,oklahoma,new mexico,south carolina,maryland,connecticut,maine,vermont,new hampshire,west virginia,south dakota",
+"north dakota,delaware,rhode island"],
+["Name a vegetable",
+"carrot,broccoli,potato,lettuce,tomato,cucumber,onion,spinach,corn,pea",
+"celery,cabbage,cauliflower,bell pepper|pepper,zucchini|courgette,eggplant|aubergine,green bean|bean,asparagus,kale,mushroom,garlic,beet|beetroot,radish,sweet potato,pumpkin,squash,brussels sprout|brussel sprout|sprout,artichoke",
+"leek,turnip,parsnip,okra,bok choy|pak choi,arugula|rocket,chard|swiss chard,fennel,shallot,scallion|green onion|spring onion,rutabaga|swede,yam,watercress,endive,radicchio,collard greens|collards,jicama,daikon,edamame,chickpea,lentil,butternut squash,snow pea,bamboo shoot,taro,cassava|yuca,kohlrabi",
+"celeriac,salsify,romanesco,sunchoke|jerusalem artichoke,fiddlehead,cardoon,samphire,mizuna,tatsoi,lotus root,burdock,chayote,purslane,sorrel,ramps|ramp,gai lan|chinese broccoli,yardlong bean,water chestnut,oca,malanga,nopales|nopal"],
+["Name a sport played with a ball",
+"soccer|football,basketball,baseball,tennis,volleyball,golf,american football",
+"rugby,cricket,field hockey,softball,table tennis|ping pong,bowling,handball,water polo,dodgeball,polo,squash,lacrosse,kickball,pickleball,billiards|pool|snooker",
+"racquetball,netball,bocce,croquet,beach volleyball,australian rules football|aussie rules|afl,gaelic football,petanque|boules,futsal,four square,tetherball,skee ball,rounders",
+"sepak takraw,jai alai|pelota,korfball,hurling,camogie,goalball,bossaball,kemari,cuju,pesapallo,tchoukball,fistball|faustball,chinlone,footvolley,teqball,stoolball,wallyball"],
+["Name a musical instrument",
+"piano,guitar,drums|drum,violin,flute,trumpet",
+"saxophone,cello,clarinet,harp,bass guitar|bass,ukulele,trombone,harmonica,keyboard,tuba,xylophone,banjo,accordion,tambourine,oboe,french horn|horn,electric guitar,recorder,triangle,organ",
+"bassoon,viola,double bass|upright bass,piccolo,mandolin,cymbals|cymbal,bagpipes|bagpipe,glockenspiel,marimba,harpsichord,sitar,synthesizer|synth,timpani,cowbell,bongos|bongo,conga,kazoo,lute,didgeridoo,steel drum|steelpan,maracas,castanets,vibraphone,euphonium,cornet,bugle,ocarina,pan flute|panpipes,tabla,koto,bodhran,djembe,celesta,melodica,autoharp,dulcimer,zither,cajon,flugelhorn,sousaphone",
+"theremin,hurdy gurdy,erhu,shamisen,kalimba|mbira|thumb piano,oud,balalaika,sackbut,crumhorn,shakuhachi,gamelan,hang drum|handpan,glass harmonica,ondes martenot,contrabassoon,serpent,sarangi,santoor,guzheng,pipa,kora,berimbau,bandoneon,charango,nyckelharpa,duduk,washboard,jaw harp|jews harp,slide whistle,vuvuzela,rebec,psaltery,clavichord,mellophone,alphorn"],
+["Name a planet, moon or dwarf planet in our solar system",
+"earth,mars,jupiter,saturn,moon,venus,mercury",
+"neptune,uranus,pluto,europa,titan",
+"io,ganymede,callisto,enceladus,triton,phobos,deimos,ceres,charon,eris,makemake,haumea",
+"miranda,oberon,titania,ariel,umbriel,mimas,tethys,dione,rhea,iapetus,hyperion,phoebe,nereid,proteus,amalthea,himalia,sedna,quaoar,gonggong,orcus,janus,epimetheus,pandora,prometheus,thebe,metis,dysnomia,nix,hydra,kerberos,styx,puck,larissa,pan,atlas,galatea,despina,thalassa,naiad,salacia,varuna,ixion"],
+["Name a dog breed",
+"labrador|labrador retriever|lab,golden retriever,german shepherd,poodle,bulldog,chihuahua,beagle,husky|siberian husky,pug",
+"dachshund|wiener dog|sausage dog,rottweiler,boxer,corgi,pomeranian,shih tzu,great dane,border collie,yorkshire terrier|yorkie,doberman,french bulldog|frenchie,dalmatian,pit bull|pitbull,maltese,cocker spaniel,australian shepherd,collie,greyhound,shiba inu|shiba,bernese mountain dog,saint bernard|st bernard,jack russell|jack russell terrier",
+"akita,samoyed,alaskan malamute|malamute,whippet,bichon frise|bichon,basset hound,bloodhound,mastiff,newfoundland,schnauzer,havanese,cavalier king charles spaniel|cavalier|king charles spaniel,weimaraner,vizsla,boston terrier,bull terrier,chow chow|chow,shetland sheepdog|sheltie,shar pei,papillon,pekingese,lhasa apso,great pyrenees,cane corso,irish setter,afghan hound,borzoi,west highland terrier|westie|west highland white terrier,scottish terrier|scottie,airedale|airedale terrier,miniature pinscher|min pin,italian greyhound,saluki,rhodesian ridgeback,staffordshire bull terrier|staffy,basenji,keeshond,old english sheepdog,springer spaniel,pointer,labradoodle,goldendoodle,cockapoo",
+"xoloitzcuintli|xolo,komondor,puli,otterhound,lagotto romagnolo,azawakh,bergamasco,mudi,catahoula,leonberger,dogue de bordeaux,tibetan mastiff,norwegian lundehund,thai ridgeback,peruvian inca orchid,kooikerhondje,sloughi,chinook,bedlington terrier,dandie dinmont,skye terrier,schipperke,affenpinscher,brussels griffon,coton de tulear,pharaoh hound,ibizan hound,kuvasz,briard,beauceron,bouvier des flandres|bouvier,anatolian shepherd,kangal,boerboel,plott hound,treeing walker coonhound,redbone coonhound,bluetick coonhound,carolina dog,new guinea singing dog,finnish spitz,nova scotia duck tolling retriever|toller,clumber spaniel,sussex spaniel,spinone italiano|spinone,lowchen,japanese chin,tosa"],
+["Name a color",
+"red,blue,green,yellow,purple,orange,pink,black,white",
+"brown,gray|grey,teal,turquoise,violet,magenta,cyan,indigo,maroon,navy|navy blue,beige,gold,silver,lavender,lime,tan,cream",
+"crimson,scarlet,burgundy,coral,salmon,peach,mint,olive,mauve,lilac,fuchsia,aqua,ivory,khaki,charcoal,ochre,amber,emerald,sapphire,ruby,jade,periwinkle,chartreuse,vermilion,cobalt,azure,taupe,sienna,umber,plum,rust,mustard,sky blue,royal blue,hot pink,sea green,forest green,off white,champagne,bronze,copper",
+"cerulean,puce,celadon,vantablack,heliotrope,gamboge,smaragdine,xanadu,glaucous,falu red,cinnabar,viridian,coquelicot,eburnean,feldgrau,isabelline,razzmatazz,zaffre,wenge,sarcoline,amaranth,carmine,ultramarine,alizarin,phthalo blue|phthalo,paynes grey,haint blue,sepia,ecru,fallow,aureolin,cordovan,byzantium,tyrian purple|tyrian,bistre,smalt,caput mortuum,verdigris,lapis"],
+["Name something you'd find in a kitchen",
+"fridge|refrigerator,oven,stove,sink,microwave,knife,spoon,fork,plate,pot,pan,toaster,dishwasher",
+"blender,kettle,cutting board|chopping board,spatula,cup,mug,bowl,freezer,cabinet|cupboard,counter|countertop,coffee maker|coffee machine,whisk,ladle,table,chair,trash can|bin|garbage can,sponge,dish soap|soap,oven mitt,dish towel|towel|tea towel,pantry,can opener,colander,grater,rolling pin,peeler,tongs,salt,pepper",
+"mandoline,zester|microplane,mortar and pestle|mortar|pestle,sieve|strainer,ramekin,dutch oven,wok,skillet,saucepan,baking sheet|baking tray|sheet pan,muffin tin,measuring cup,measuring spoon,salad spinner,garlic press,stand mixer|mixer,food processor,slow cooker|crockpot,air fryer,instant pot|pressure cooker,rice cooker,waffle iron|waffle maker,juicer,trivet,spice rack,knife block,apron,timer,thermometer,kitchen scale|scale,corkscrew|bottle opener,teapot,pitcher|jug,tupperware|container,aluminum foil|foil|tin foil,plastic wrap|cling film,parchment paper,paper towel,ice cube tray,range hood|extractor fan,backsplash,lazy susan,drawer",
+"spurtle,bain marie,chinois,tamis,poultry shears,melon baller,pastry brush,bench scraper,splatter screen,egg separator,cherry pitter,nutcracker,tagine,cloche,mezzaluna,pizza peel,rice paddle,sous vide|immersion circulator,dehydrator,banneton|proofing basket,pie weights,oyster knife,cleaver,santoku,fish spatula,turkey baster|baster,potato ricer|ricer,spider strainer,double boiler,bundt pan,springform pan,madeleine pan,cookie cutter,piping bag,dough hook,flour sifter|sifter,butter dish,gravy boat,salt pig|salt cellar,egg cup"],
+["Name a bird",
+"eagle,robin,pigeon,parrot,owl,penguin,chicken,duck,flamingo,crow,hawk",
+"blue jay,cardinal,sparrow,hummingbird,seagull|gull,swan,peacock,ostrich,falcon,goose,turkey,toucan,woodpecker,pelican,raven,dove,canary,emu,vulture,bald eagle,crane,heron,stork,kiwi,finch,parakeet|budgie|budgerigar,magpie,cockatoo,macaw",
+"albatross,puffin,kingfisher,starling,wren,swallow,oriole,bluebird,mockingbird,nightingale,lark,cuckoo,condor,osprey,kestrel,kookaburra,cassowary,roadrunner,quail,pheasant,grouse,partridge,ibis,egret,cormorant,loon,sandpiper,tern,warbler,thrush,chickadee,nuthatch,grackle,blackbird,mallard,goldfinch,hornbill,lovebird,cockatiel,rhea,peregrine falcon,barn owl,snowy owl,secretary bird,shoebill,frigatebird,blue footed booby|booby,dodo",
+"hoatzin,kakapo,potoo,lyrebird,bowerbird,tawny frogmouth|frogmouth,quetzal,oilbird,tui,kea,takahe,hamerkop,jacana,shrike,dipper,wagtail,bushtit,limpkin,anhinga,roseate spoonbill|spoonbill,avocet,godwit,dunlin,turnstone,whimbrel,bittern,nightjar,whip poor will,treecreeper,goldcrest,bee eater,hoopoe,motmot,manakin,bird of paradise,cock of the rock,sunbittern,kagu,tinamou,trogon,turaco,weaverbird|weaver,sunbird,honeyeater,pitta,fulmar,petrel,shearwater,gannet,skua,guillemot,razorbill,merganser,eider,ptarmigan,capercaillie,sapsucker,tanager,grosbeak,towhee,junco,vireo,waxwing,bobolink,meadowlark"],
+["Name a capital city",
+"london,paris,tokyo,washington dc|washington|dc,rome,berlin,madrid,beijing,moscow",
+"ottawa,canberra,cairo,athens,dublin,amsterdam,mexico city,new delhi|delhi,seoul,bangkok,lisbon,vienna,stockholm,oslo,copenhagen,buenos aires,brussels,prague,warsaw,ankara,havana,budapest,helsinki,lima,nairobi,manila,jakarta,bern,edinburgh,cardiff",
+"santiago,bogota,caracas,brasilia,montevideo,quito,la paz,asuncion,reykjavik,riga,tallinn,vilnius,bucharest,sofia,belgrade,zagreb,ljubljana,bratislava,kyiv|kiev,minsk,tbilisi,yerevan,baku,tehran,baghdad,riyadh,doha,abu dhabi,muscat,amman,beirut,damascus,kabul,islamabad,kathmandu,dhaka,colombo,hanoi,kuala lumpur,singapore,taipei,ulaanbaatar|ulan bator,wellington,pretoria,cape town,addis ababa,accra,abuja,dakar,rabat,tunis,algiers,kampala,kinshasa,luanda,harare,lusaka,valletta,nicosia,tirana,skopje,sarajevo,podgorica,chisinau,panama city,san jose,managua,tegucigalpa,san salvador,guatemala city,kingston,santo domingo,port au prince,belfast,phnom penh,vientiane",
+"naypyidaw|naypyitaw,ouagadougou,thimphu,astana|nur sultan,bishkek,dushanbe,ashgabat,tashkent,antananarivo,nouakchott,bamako,niamey,ndjamena,bangui,yaounde,libreville,malabo,brazzaville,kigali,gitega,dodoma,lilongwe,maputo,gaborone,windhoek,maseru,mbabane,moroni,port louis,asmara,djibouti,mogadishu,juba,khartoum,tripoli,freetown,monrovia,conakry,bissau,banjul,porto novo,lome,yamoussoukro,praia,sao tome,funafuti,majuro,palikir,ngerulmud,tarawa,honiara,port vila,suva,nukualofa,apia,male,dili,bandar seri begawan,paramaribo,georgetown,belmopan,castries,roseau,basseterre,bridgetown,kingstown,nassau,port of spain,vaduz,andorra la vella,sanaa,manama,kuwait city,pyongyang"],
+["Name a programming language",
+"python,java,javascript|js,c,c++|cpp,html",
+"c#|csharp,ruby,php,swift,sql,go|golang,rust,typescript|ts,kotlin,css,r,scratch,matlab",
+"perl,haskell,lua,scala,dart,julia,assembly,fortran,cobol,lisp,pascal,visual basic|basic|vb,objective c,elixir,erlang,clojure,f#|fsharp,bash|shell,powershell,groovy,prolog,ocaml,delphi,solidity,zig,nim,crystal,elm,racket,scheme,ada,smalltalk,logo,vba,abap,apl,awk,sas,stata,verilog,vhdl,webassembly|wasm",
+"brainfuck,befunge,malbolge,whitespace,lolcode,intercal,forth,simula,algol,modula 2|modula,oberon,eiffel,rexx,tcl,hack,idris,agda,coq,lean,mercury,chapel,pony,rebol,factor,raku|perl 6,haxe,vala,odin,carbon,mojo,gleam,unison,piet,ballerina,apex,jai,hare,d"],
+["Name a board game",
+"monopoly,chess,scrabble,checkers|draughts,clue|cluedo,game of life|life,sorry",
+"risk,catan|settlers of catan,battleship,connect four|connect 4,trivial pursuit,candy land|candyland,chutes and ladders|snakes and ladders,backgammon,go,mouse trap,operation,guess who,pictionary,jenga,ticket to ride,stratego,mancala,othello|reversi,trouble,ludo|parcheesi,yahtzee,boggle,pandemic,cranium,taboo,apples to apples",
+"carcassonne,codenames,dominion,azul,wingspan,splendor,7 wonders|seven wonders,agricola,puerto rico,power grid,terraforming mars,gloomhaven,scythe,twilight struggle,dixit,king of tokyo,small world,betrayal at house on the hill,arkham horror,axis and allies,diplomacy,hungry hungry hippos,sequence,chinese checkers,shogi,xiangqi|chinese chess,mahjong,dominoes,cribbage,rummikub,blokus,qwirkle,mastermind,hive,patchwork,everdell,root,spirit island,brass birmingham|brass,cascadia,dune imperium,avalon|the resistance,coup,love letter,photosynthesis,quoridor,abalone,camel up,sushi go,lords of waterdeep,mysterium,tsuro,kingdomino,jaipur,santorini,onitama",
+"senet,hnefatafl|tafl,royal game of ur|ur,nine mens morris,pachisi,chaturanga,fanorona,alquerque,surakarta,konane,oware,bao,crokinole,tigris and euphrates,el grande,caylus,le havre,food chain magnate,twilight imperium,mage knight,hansa teutonica,a feast for odin,gaia project,through the desert,acquire,high society,modern art,tikal,torres,dvonn,yinsh,gipf,lines of action,arimaa,shobu,quarto,pente,gomoku,halma,tablut"],
+["Name a type of cheese",
+"cheddar,mozzarella,swiss,parmesan,american,brie,gouda,feta",
+"provolone,pepper jack,monterey jack|jack,cream cheese,cottage cheese,ricotta,blue cheese|blue,camembert,colby,goat cheese|chevre,havarti,muenster|munster,gruyere,string cheese,halloumi,mascarpone,manchego,parmigiano reggiano|parmigiano,pecorino|pecorino romano,gorgonzola,stilton,roquefort,emmental|emmentaler",
+"asiago,fontina,burrata,paneer,edam,jarlsberg,raclette,taleggio,limburger,queso fresco,cotija,oaxaca,boursin,comte,reblochon,wensleydale,red leicester,double gloucester,lancashire,cheshire,neufchatel,quark,labneh,grana padano,bocconcini,stracciatella,scamorza,caciocavallo,leerdammer,maasdam,port salut,danish blue,colby jack,velveeta,smoked gouda,brunost|gjetost,mimolette,tete de moine,appenzeller,cantal",
+"casu marzu,epoisses,vacherin|vacherin mont dor,stinking bishop,pule,bryndza,kashkaval,sirene,oscypek,caerphilly,cornish yarg|yarg,shropshire blue,beaufort,abondance,tomme,morbier,pont l eveque,livarot,maroilles,langres,chaource,saint marcellin,valencay,crottin de chavignol|crottin,bleu d auvergne,fourme d ambert,ossau iraty,idiazabal,mahon,cabrales,torta del casar,tetilla,castelmagno,montasio,piave,robiola,akkawi,nabulsi,chhena,juustoleipa|leipajuusto,vasterbotten,gamalost,esrom,tilsit,butterkase,harzer"],
+["Name an element on the periodic table",
+"oxygen,hydrogen,carbon,gold,iron,helium,nitrogen,silver",
+"sodium,calcium,copper,chlorine,neon,lead,mercury,aluminum|aluminium,zinc,potassium,uranium,magnesium,lithium,sulfur|sulphur,silicon,platinum,phosphorus,titanium,plutonium,nickel,tin,fluorine,iodine",
+"argon,boron,cobalt,chromium,manganese,tungsten,radium,radon,krypton,xenon,beryllium,bromine,arsenic,barium,cesium|caesium,francium,strontium,selenium,bismuth,cadmium,gallium,germanium,palladium,iridium,osmium,rhodium,thorium,tellurium,polonium,antimony,vanadium,zirconium,molybdenum,technetium,einsteinium,californium,americium,curium,neptunium,nobelium,oganesson,tennessine,astatine",
+"scandium,rubidium,yttrium,niobium,ruthenium,indium,lanthanum,cerium,praseodymium,neodymium,promethium,samarium,europium,gadolinium,terbium,dysprosium,holmium,erbium,thulium,ytterbium,lutetium,hafnium,tantalum,rhenium,thallium,actinium,protactinium,berkelium,fermium,mendelevium,lawrencium,rutherfordium,dubnium,seaborgium,bohrium,hassium,meitnerium,darmstadtium,roentgenium,copernicium,nihonium,flerovium,moscovium,livermorium"],
+["Name a part of the human body",
+"arm,leg,head,hand,foot|feet,eye,nose,mouth,ear,heart,finger",
+"knee,elbow,shoulder,toe,neck,brain,stomach,lung,liver,chest,back,hair,tooth|teeth,tongue,lip,chin,wrist,ankle,hip,thumb,skin,kidney,face,cheek,forehead,eyebrow,belly button|navel,bone",
+"spleen,pancreas,gallbladder,appendix,thigh,calf,shin,heel,palm,knuckle,armpit,eyelash,eyelid,nostril,earlobe,jaw,temple,collarbone|clavicle,rib,spine,pelvis,femur,skull,bladder,intestine,colon,esophagus,trachea|windpipe,larynx|voice box,thyroid,tonsil,uvula,gums,fingernail|nail,toenail,abdomen,waist,buttocks|butt,groin,sternum,diaphragm,artery,vein,muscle,tendon,ligament,cartilage,kneecap|patella,shoulder blade|scapula,tailbone|coccyx,iris,pupil,eardrum",
+"philtrum,glabella,lunula,canthus,tragus,purlicue,popliteal fossa,hallux,nape,occiput,axilla,hyoid,stapes,incus,malleus,cochlea,sacrum,ulna,radius,tibia,fibula,talus,calcaneus,metatarsal,phalanges|phalanx,pineal gland,pituitary gland,hypothalamus,amygdala,hippocampus,cerebellum,medulla,thymus,adrenal gland,duodenum,jejunum,ileum,cecum,epiglottis,septum,sclera,cornea,retina,cuticle,mandible,maxilla,achilles tendon,meniscus,rotator cuff,vagus nerve,sciatic nerve"],
+["Name a gemstone",
+"diamond,ruby,emerald,sapphire,pearl",
+"amethyst,topaz,opal,jade,garnet,turquoise,aquamarine,onyx,quartz,peridot,citrine,tanzanite",
+"lapis lazuli|lapis,moonstone,tourmaline,alexandrite,obsidian,amber,coral,jasper,agate,malachite,tigers eye,bloodstone,carnelian,zircon,spinel,morganite,kunzite,beryl,chrysoberyl,rose quartz,smoky quartz,iolite,labradorite,sunstone,rhodochrosite,hematite,pyrite,jet,sodalite,chalcedony,fluorite,cubic zirconia,moissanite,black opal",
+"benitoite,painite,taaffeite,grandidierite,jeremejevite,musgravite,red beryl|bixbite,poudretteite,serendibite,demantoid,tsavorite,paraiba tourmaline|paraiba,padparadscha,ammolite,larimar,charoite,sugilite,seraphinite,prehnite,chrysoprase,variscite,kyanite,andalusite,sphene|titanite,hiddenite,euclase,phenakite,danburite,scapolite,diopside,heliodor,goshenite,ametrine,aventurine,chrysocolla,rhodonite,unakite,dumortierite,howlite,apatite,azurite,vesuvianite|idocrase,zoisite"],
+["Name a dinosaur or prehistoric reptile",
+"tyrannosaurus rex|t rex|trex|tyrannosaurus,triceratops,velociraptor|raptor,stegosaurus,brontosaurus,pterodactyl",
+"brachiosaurus,spinosaurus,ankylosaurus,diplodocus,allosaurus,apatosaurus,parasaurolophus,iguanodon,dilophosaurus,pachycephalosaurus,pteranodon,gallimimus,carnotaurus,giganotosaurus,mosasaurus",
+"compsognathus,deinonychus,archaeopteryx,oviraptor,therizinosaurus,baryonyx,microraptor,protoceratops,maiasaura,edmontosaurus,hadrosaurus,styracosaurus,plesiosaurus,ichthyosaurus,argentinosaurus,quetzalcoatlus,troodon,utahraptor,megalosaurus,ceratosaurus,coelophysis,herrerasaurus,eoraptor,dimetrodon,corythosaurus,lambeosaurus,kentrosaurus,suchomimus,acrocanthosaurus,albertosaurus,gorgosaurus,daspletosaurus,camarasaurus,titanosaurus,mamenchisaurus,amargasaurus,euoplocephalus,nodosaurus,psittacosaurus,yutyrannus,dreadnoughtus,patagotitan,stygimoloch,dracorex,ouranosaurus",
+"nigersaurus,mononykus,kosmoceratops,einiosaurus,pachyrhinosaurus,minmi,leaellynasaura,muttaburrasaurus,australovenator,tarbosaurus,alioramus,qianzhousaurus,sinosauropteryx,sinornithosaurus,anchiornis,epidexipteryx,halszkaraptor,balaur,zuul,gargoyleosaurus,borealopelta,sauropelta,gastonia,scelidosaurus,heterodontosaurus,tianyulong,kulindadromeus,thescelosaurus,tenontosaurus,dryosaurus,camptosaurus,hypsilophodon,shantungosaurus,tsintaosaurus,olorotitan,saurolophus,brachylophosaurus,gryposaurus,irritator,concavenator,deltadromeus,majungasaurus,masiakasaurus,rajasaurus,abelisaurus,torvosaurus,sinraptor,yangchuanosaurus,monolophosaurus,cryolophosaurus,guanlong,dilong,nanotyrannus,lythronax,europasaurus,supersaurus,sauroposeidon,giraffatitan,saltasaurus,rapetosaurus,shunosaurus,plateosaurus,massospondylus,anchisaurus,riojasaurus"],
+["Name a type of tree",
+"oak,pine,maple,palm,apple,birch,willow",
+"cherry|cherry blossom,spruce,fir,cedar,redwood,sequoia,elm,ash,poplar,cypress,christmas tree,evergreen,magnolia,dogwood,walnut,beech,sycamore,aspen,banyan,baobab,orange,lemon,coconut|coconut palm,bamboo,eucalyptus,weeping willow,hickory",
+"chestnut,hemlock,juniper,larch,yew,linden|lime|basswood,hawthorn,alder,hazel,mahogany,teak,ebony,olive,fig,acacia,mangrove,cottonwood,ginkgo,jacaranda,catalpa,black locust|locust|honey locust,sassafras,tulip tree|tulip poplar,sweetgum,buckeye,horse chestnut,rowan|mountain ash,hornbeam,boxwood,holly,laurel,bay,joshua tree,douglas fir,giant sequoia,cork oak,rubber tree,kapok,sandalwood,rosewood,balsa,neem,tamarind,mango,avocado",
+"dragon blood tree|dragons blood tree,bristlecone pine,wollemi pine,monkey puzzle|araucaria,dawn redwood|metasequoia,bald cypress,tupelo|blackgum,osage orange,pawpaw,persimmon,mulberry,ironwood,lignum vitae,purpleheart,zebrawood,bubinga,padauk,wenge,iroko,sapele,silk floss,cannonball tree,sausage tree,sandbox tree,manchineel,strangler fig,bodhi tree|bo tree|peepal,deodar,chinar,royal poinciana|flame tree|flamboyant,frangipani,moringa,tamarack,kauri,totara,rimu,pohutukawa,kowhai,ghost gum,snow gum,jarrah,karri,bunya pine,norfolk island pine,yellowwood,marula,mopane,quiver tree,whitebeam,service tree,blackthorn,serviceberry|juneberry,redbud,witch hazel,smoke tree,sourwood,kentucky coffeetree,hackberry,zelkova,katsura,paulownia|empress tree,camphor tree,cacao"],
+["Name a famous painter",
+"van gogh|vincent van gogh,picasso|pablo picasso,leonardo da vinci|da vinci|leonardo,michelangelo,monet|claude monet",
+"rembrandt,salvador dali|dali,frida kahlo|kahlo,andy warhol|warhol,bob ross,georgia okeeffe|okeeffe|o keeffe,jackson pollock|pollock,raphael,renoir,henri matisse|matisse,paul cezanne|cezanne,edvard munch|munch,johannes vermeer|vermeer,gustav klimt|klimt,degas,botticelli,banksy,goya,manet,norman rockwell|rockwell,keith haring|haring,basquiat|jean michel basquiat,wassily kandinsky|kandinsky,rene magritte|magritte,caravaggio,paul gauguin|gauguin,georges seurat|seurat",
+"mark rothko|rothko,piet mondrian|mondrian,edward hopper|hopper,jmw turner|turner,john constable|constable,titian,el greco,diego velazquez|velazquez,peter paul rubens|rubens,paul klee|klee,joan miro|miro,marc chagall|chagall,toulouse lautrec,pissarro,mary cassatt|cassatt,whistler,john singer sargent|sargent,hokusai,hiroshige,albrecht durer|durer,hieronymus bosch|bosch,bruegel|brueghel,jan van eyck|van eyck,giotto,modigliani,egon schiele|schiele,david hockney|hockney,roy lichtenstein|lichtenstein,de kooning,francis bacon|bacon,lucian freud|freud,diego rivera|rivera,yayoi kusama|kusama,artemisia gentileschi|gentileschi,ingres,delacroix,courbet,millet,corot,caspar david friedrich|friedrich,william blake|blake,andrew wyeth|wyeth,grant wood,thomas kinkade|kinkade,mc escher|escher",
+"hilma af klint|af klint,vigee le brun,fragonard,watteau,boucher,chardin,poussin,claude lorrain,tintoretto,veronese,bellini,mantegna,piero della francesca,uccello,fra angelico,masaccio,cimabue,duccio,holbein,cranach,grunewald,memling,rogier van der weyden,frans hals|hals,jan steen,de hooch,ruisdael,canaletto,tiepolo,zurbaran,murillo,sorolla,hammershoi,kirchner,nolde,franz marc,beckmann,otto dix,grosz,max ernst,tanguy,de chirico,morandi,boccioni,malevich,goncharova,repin,aivazovsky,lee krasner|krasner,frankenthaler,joan mitchell,clyfford still,barnett newman,motherwell,gorky,guston,diebenkorn,thiebaud,rauschenberg,jasper johns,twombly,gerhard richter|richter,kiefer,bridget riley,tamara de lempicka|lempicka,remedios varo,leonora carrington,tamayo,siqueiros,orozco,botero,tarsila do amaral,qi baishi,sesshu,jakuchu,raja ravi varma,amrita sher gil,namatjira,sidney nolan,emily carr,tom thomson,lawren harris"],
+["Name a flower",
+"rose,tulip,sunflower,daisy,lily,orchid,daffodil",
+"lavender,carnation,dandelion,lilac,iris,peony,poppy,hydrangea,violet,marigold,chrysanthemum|mum,hibiscus,jasmine,lotus,magnolia,petunia,pansy,geranium,gardenia,zinnia,dahlia,azalea,begonia,cherry blossom|sakura,lily of the valley,forget me not,babys breath",
+"snapdragon,foxglove,gerbera|gerbera daisy,freesia,amaryllis,anemone,bluebell,buttercup,camellia,cosmos,crocus,delphinium,edelweiss,gladiolus,heather,honeysuckle,hyacinth,impatiens,larkspur,lupine|lupin,morning glory,nasturtium,oleander,primrose,ranunculus,rhododendron,snowdrop,sweet pea,verbena,wisteria,yarrow,aster,bougainvillea,calla lily|calla,clematis,columbine,coneflower|echinacea,cornflower,plumeria|frangipani,poinsettia,protea,bird of paradise,tiger lily,water lily,black eyed susan,periwinkle,alyssum,sweet william,stock,statice,trillium,bleeding heart,hollyhock,salvia,celosia,moss rose|portulaca,thistle,clover",
+"rafflesia|corpse flower|titan arum,ghost orchid,kadupul,middlemist red,jade vine,hellebore|lenten rose,fritillary|fritillaria,scabiosa,astrantia,love in a mist|nigella,foxtail lily|eremurus,red hot poker|kniphofia,agapanthus,alstroemeria,lisianthus|eustoma,tuberose,stephanotis,hoya|wax flower,gloriosa,heliconia,angels trumpet|brugmansia,datura,passionflower,nemesia,osteospermum,gazania,calendula,tithonia,rudbeckia,helenium,gaillardia,coreopsis,liatris,penstemon,phlox,bee balm|monarda,agastache,catmint|nepeta,sedum,saxifrage,campanula,monkshood|aconite|wolfsbane,cyclamen,grape hyacinth|muscari,scilla,allium,camassia,trout lily,bloodroot,hepatica,pasqueflower,gentian,lewisia,oxalis,mimosa,wattle,waratah,banksia,kangaroo paw,flannel flower"],
+["Name a type of pasta",
+"spaghetti,penne,macaroni,fettuccine|fettucine,lasagna|lasagne,ravioli,linguine",
+"rigatoni,farfalle|bow tie|bowtie,rotini,fusilli,tortellini,angel hair|capellini,ziti,orzo,gnocchi,shells|conchiglie,elbow,egg noodles,manicotti,cannelloni,bucatini,orecchiette,pappardelle,tagliatelle",
+"cavatappi,campanelle,gemelli,ditalini,radiatori,rotelle|wagon wheels,acini di pepe,stelline,vermicelli,tortelloni,agnolotti,cappelletti,mafalde|mafaldine,paccheri,trofie,strozzapreti,casarecce,cavatelli,pici,tagliolini,fregola,anelli,lumache,mezze maniche,perciatelli,tortiglioni,bigoli,garganelli,maltagliati,pastina,alphabet,spaetzle|spatzle,ramen,udon,soba",
+"corzetti,lorighittas,su filindeu|filindeu,busiate,culurgiones,malloreddus,cencioni,sagne,scialatielli,fazzoletti,lagane,mandilli de saea,gramigna,passatelli,canederli,cjarsons,casoncelli,anolini,cappellacci,mezzelune,pizzoccheri,strangozzi,umbricelli,stracci,quadrucci,pansoti,trenette,testaroli,gigli,creste di gallo,sedanini,calamarata,candele,fileja,stroncatura,capunti,ndunderi,tajarin"],
+["Name an insect",
+"ant,bee,butterfly,fly,mosquito,ladybug|ladybird,beetle,grasshopper,cockroach|roach,spider",
+"dragonfly,moth,wasp,cricket,termite,flea,firefly|lightning bug,hornet,praying mantis|mantis,caterpillar,gnat,stick insect|walking stick,bumblebee,honeybee,louse|lice,tick",
+"cicada,earwig,silverfish,aphid,weevil,katydid,locust,stink bug,horsefly,fruit fly,dung beetle,stag beetle,water strider,mayfly,lacewing,damselfly,yellowjacket,bed bug,boll weevil,june bug,scarab,leafcutter ant,fire ant,carpenter ant,monarch butterfly|monarch,swallowtail,luna moth,atlas moth,hercules beetle,goliath beetle,rhinoceros beetle,firebrat,thrips,mealworm,silkworm,inchworm,botfly,tsetse fly,sandfly,midge,deer fly,crane fly,hoverfly,leafhopper,treehopper,spittlebug,whitefly,mealybug,cockchafer,click beetle,bombardier beetle,tiger beetle,assassin bug,water boatman,backswimmer,giant water bug,antlion,dobsonfly,stonefly,caddisfly,scorpionfly",
+"webspinner,angel insect|zorapteran,ice crawler|grylloblattid,heel walker,twisted wing parasite|strepsiptera,snakefly,alderfly,owlfly,mantidfly,bristletail,springtail,cave cricket|camel cricket,weta,mole cricket,jerusalem cricket,velvet ant,cuckoo wasp,tarantula hawk,fig wasp,gall wasp,ichneumon wasp,sawfly,horntail,mud dauber,potter wasp,orchid mantis,ghost mantis,leaf insect|walking leaf,spotted lanternfly|lanternfly,thorn bug,froghopper,planthopper,psyllid,cochineal,lac insect,glowworm,rove beetle,blister beetle,oil beetle,tortoise beetle,jewel beetle,longhorn beetle,titan beetle,violin beetle,giraffe weevil,bee fly,robber fly,flesh fly,blowfly,stalk eyed fly,snipe fly,black soldier fly|soldier fly,dance fly,kelp fly,scuttle fly,blackfly,no see um"],
+["Name a vehicle",
+"car,bus,truck,bicycle|bike,motorcycle|motorbike,train,airplane|plane|aeroplane,boat",
+"van,taxi|cab,helicopter,scooter,ship,tractor,ambulance,fire truck|fire engine,suv,jeep,limousine|limo,subway|metro,tram|streetcar|trolley,skateboard,rocket,submarine,pickup truck|pickup,minivan,tank,yacht,canoe,kayak,jet ski,golf cart,forklift,bulldozer,semi truck|semi|18 wheeler|lorry,rv|camper|motorhome",
+"hovercraft,blimp|zeppelin|airship,hot air balloon,unicycle,tricycle,segway,moped,rickshaw|tuk tuk,gondola,ferry,tugboat,glider,snowmobile,sled|sleigh,dog sled,monorail,cable car,funicular,space shuttle,lunar rover,go kart|kart,dune buggy,atv|quad bike,excavator,crane,steamroller|road roller,cement mixer,garbage truck,tow truck,hearse,double decker,carriage,stagecoach,chariot,wagon,raft,catamaran,sailboat,speedboat,cruise ship,aircraft carrier,zamboni,pedicab,trolleybus,hydrofoil,seaplane,jetpack,drone",
+"penny farthing,velocipede,sedan chair,palanquin,travois,troika,droshky,hansom cab,brougham,landau,phaeton,curricle,barouche,charabanc,omnibus,dandy horse,draisine,handcar,velomobile,recumbent,ekranoplan,autogyro|gyrocopter,ornithopter,amphicar,bathyscaphe,dirigible,coracle,umiak,dhow,junk,felucca,sampan,trireme,galleon,clipper,snowcat,halftrack,jeepney,songthaew,matatu,marshrutka,chicken bus,auto rickshaw,boda boda"],
+["Name something that's yellow",
+"banana,sun,lemon,school bus,corn",
+"sunflower,rubber duck,taxi,egg yolk|yolk,butter,cheese,mustard,pineapple,canary,daffodil,dandelion,pencil,smiley face,minion,pikachu,spongebob,tennis ball,highlighter,bee,star",
+"buttercup,goldfinch,yellow pages,yellow submarine|submarine,caution tape,big bird,tweety,sticky note|post it,sulfur,saffron,turmeric,marigold,custard,lemonade,yellow jersey|maillot jaune,chick,gold,honey,traffic light,yield sign,hard hat,raincoat,bart simpson|simpsons|homer simpson",
+"forsythia,goldenrod,yellow card,mimosa,gamboge,orpiment,yellowhammer,yellowfin tuna,banana slug,lemon shark,golden poison frog,yellow tang,yellow fever,ackee,starfruit,quince,canola|rapeseed,ochre,citrine,yellow warbler,school bus yellow,yellow jacket,legal pad,egg custard,pollen"],
+["Name a breakfast food",
+"eggs|egg,pancakes|pancake,bacon,cereal,toast,waffles|waffle,oatmeal|porridge",
+"french toast,sausage,bagel,muffin,yogurt|yoghurt,omelet|omelette,hash browns,croissant,grits,biscuits and gravy|biscuits,donut|doughnut,granola,fruit,scrambled eggs,smoothie,breakfast burrito,avocado toast,english muffin",
+"eggs benedict,shakshuka|shakshouka,crepes|crepe,quiche,frittata,huevos rancheros,chilaquiles,congee,kippers,black pudding,full english|fry up,baked beans|beans,muesli,overnight oats,acai bowl,danish,cinnamon roll,scone,kedgeree,dim sum,poha,idli,dosa,upma,paratha,miso soup,natto,tamagoyaki,menemen,simit,pain au chocolat,chia pudding,bagel and lox|lox,corned beef hash|hash,scrapple,breakfast sandwich",
+"bircher muesli,ful medames|ful,laverbread,smorrebrod,tattie scone|potato scone,haggis,white pudding,boxty,arepa,pan con tomate,churros,gallo pinto,mangu,ackee and saltfish,bubble and squeak,kaya toast,nasi lemak,roti canai,khao tom,jook,youtiao,douzhi,jianbing,baozi,gyeran ppang,appam,puttu,pongal,aloo paratha,chole bhature,mandazi,mohinga,babka,blintzes,syrniki,kasha,draniki,weisswurst"],
+["Name a mythical creature",
+"dragon,unicorn,mermaid,phoenix,vampire,werewolf,fairy",
+"griffin|gryphon,centaur,pegasus,minotaur,medusa,kraken,yeti|abominable snowman,bigfoot|sasquatch,loch ness monster|nessie,goblin,troll,elf,ghost,zombie,siren,hydra,cyclops,leprechaun,gnome,dwarf,ogre,banshee,sphinx,chupacabra,giant",
+"basilisk,chimera,cerberus,manticore,wyvern,harpy,satyr,faun,nymph,dryad,kelpie,selkie,golem,djinn|genie|jinn,kitsune,tengu,kappa,oni,thunderbird,wendigo,mothman,jersey devil,cockatrice,hippogriff,roc,leviathan,behemoth,bunyip,yowie,succubus,incubus,gargoyle,valkyrie,pixie,sprite,brownie,hobgoblin,boggart,will o the wisp,dullahan,headless horseman,changeling,doppelganger,poltergeist,lich,wraith,ghoul,kobold,imp,naga,garuda,qilin|kirin,tanuki,yokai,jackalope",
+"amphisbaena,catoblepas,bonnacon,ammit,bennu,taniwha,adlet,qalupalik,akhlut,nuckelavee,each uisge,cu sith,cait sith,barghest,black shuck,grindylow,jenny greenteeth,knucker,lambton worm,tatzelwurm,wolpertinger,drop bear,hodag,squonk,camazotz,ahuizotl,cipactli,nahual|nagual,tikbalang,aswang,manananggal,kapre,penanggalan,pontianak,mokele mbembe,grootslang,impundulu,tokoloshe,adze,mami wata,ninki nanka,popobawa,lamassu|shedu,mushussu,humbaba,anzu,simurgh,huma,zahhak,buraq,bahamut,karkadann,ziz,dybbuk,strix,lamia,empusa,scylla,charybdis,typhon,echidna,ladon,orthrus,geryon,talos,cetus|ketos,hippocampus,nue,ittan momen,rokurokubi,nopperabo,tsuchinoko,jorogumo,yuki onna,kuchisake onna,umibozu,gashadokuro,raiju,baku,jiangshi,huli jing,pixiu,bai ze,nian,taotie,gumiho,dokkaebi,imoogi,leshy,rusalka,domovoi,baba yaga,koschei,alkonost,sirin,gamayun,kikimora,vodyanoy,nixie|nix|neck,fossegrim,draugr,huldra,tomte|nisse,lindworm,fenrir,jormungandr,sleipnir,nidhogg,ratatoskr,pooka|puca|pwca,fear dearg,merrow,sluagh,abhartach,leanan sidhe"],
+["Name a sea or ocean",
+"pacific|pacific ocean,atlantic|atlantic ocean,indian ocean|indian,arctic ocean|arctic,mediterranean|mediterranean sea",
+"southern ocean|antarctic ocean,caribbean|caribbean sea,red sea,dead sea,black sea,north sea,caspian sea|caspian,baltic sea|baltic,arabian sea,south china sea,gulf of mexico",
+"aegean,adriatic,ionian,tyrrhenian,ligurian,sea of japan|east sea,yellow sea,east china sea,philippine sea,coral sea,tasman sea,bering sea,sea of okhotsk,barents sea,kara sea,laptev sea,beaufort sea,labrador sea,norwegian sea,greenland sea,irish sea,celtic sea,bay of bengal,andaman sea,java sea,arafura sea,timor sea,sargasso sea,sea of marmara,sea of azov,aral sea,salton sea,persian gulf,gulf of aden,weddell sea,ross sea,hudson bay,bay of biscay,english channel,white sea,banda sea,celebes sea,sulu sea",
+"sea of crete,libyan sea,alboran sea,balearic sea,sea of sardinia,levantine sea,thracian sea,myrtoan sea,icarian sea,sea of the hebrides,wadden sea,bothnian sea,sea of aland,archipelago sea,pechora sea,east siberian sea,chukchi sea,lincoln sea,wandel sea,scotia sea,amundsen sea,bellingshausen sea,davis sea,cosmonauts sea,riiser larsen sea,lazarev sea,mawson sea,dumont durville sea,somov sea,solomon sea,bismarck sea,halmahera sea,seram sea,molucca sea,flores sea,bali sea,savu sea,sibuyan sea,camotes sea,bohol sea|mindanao sea,visayan sea,samar sea,seto inland sea,sea of chiloe,argentine sea,sea of grau,sea of cortez|gulf of california,laccadive sea"]
+];
+
+/* ---------------- More categories (append new ones at the end; the daily pick stays stable) ---------------- */
+BANK.push(
+["Name a country in Asia",
+"china,japan,india,south korea|korea,thailand,vietnam",
+"indonesia,philippines,malaysia,singapore,pakistan,nepal,north korea,taiwan,mongolia,saudi arabia,iran,iraq,israel,afghanistan,bangladesh,sri lanka,cambodia,russia,turkey",
+"laos,myanmar|burma,kazakhstan,uzbekistan,jordan,lebanon,syria,yemen,oman,qatar,kuwait,bahrain,united arab emirates|uae,georgia,armenia,azerbaijan,cyprus",
+"bhutan,brunei,east timor|timor leste,maldives,turkmenistan,kyrgyzstan,tajikistan,palestine"],
+["Name a country in Africa",
+"egypt,south africa,nigeria,kenya,morocco",
+"ethiopia,ghana,madagascar,algeria,tunisia,libya,somalia,sudan,uganda,tanzania,zimbabwe,democratic republic of the congo|congo|drc,senegal,rwanda,cameroon,angola,mali",
+"botswana,namibia,zambia,mozambique,malawi,ivory coast|cote divoire,niger,chad,south sudan,eritrea,djibouti,liberia,sierra leone,guinea,burkina faso,benin,togo,gabon,mauritania,mauritius,seychelles,lesotho,eswatini|swaziland,burundi,cape verde|cabo verde,gambia",
+"equatorial guinea,guinea bissau,sao tome and principe|sao tome,comoros,central african republic,republic of the congo,western sahara"],
+["Name a breed of cat",
+"siamese,persian,maine coon,sphynx,bengal,ragdoll",
+"british shorthair,scottish fold,russian blue,abyssinian,calico,tabby,burmese,himalayan,norwegian forest cat,birman,american shorthair,exotic shorthair|exotic,munchkin,savannah,devon rex,cornish rex",
+"oriental shorthair|oriental,tonkinese,bombay,manx,turkish angora,turkish van,egyptian mau,ocicat,somali,chartreux,balinese,siberian,selkirk rex,japanese bobtail,american curl,ragamuffin,havana brown,singapura,toyger,lykoi,laperm,snowshoe",
+"korat,sokoke,khao manee,chausie,pixie bob,nebelung,burmilla,peterbald,donskoy,kurilian bobtail,american wirehair,york chocolate,serengeti,cymric,minskin,bambino,elf cat,ukrainian levkoy,highlander,lambkin,minuet|napoleon,german rex,aegean,arabian mau,australian mist,european shorthair"],
+["Name a type of weather",
+"rain,snow,sunny|sun|sunshine,wind,storm,cloudy|clouds,thunderstorm,hail",
+"fog,tornado,hurricane,lightning,thunder,sleet,drizzle,blizzard,mist,humidity,heat wave,drought,frost,rainbow,monsoon,typhoon,cyclone,overcast",
+"freezing rain,graupel,sandstorm|dust storm,haboob,derecho,squall,gale,downpour,flash flood,whiteout,ice storm,dew,haze,smog,breeze,cold snap,polar vortex,heat dome,waterspout,microburst,virga,hoarfrost,rime,el nino,la nina,indian summer,thundersnow",
+"diamond dust,sun dog|sundog|parhelion,fogbow,noctilucent clouds,mammatus,lenticular cloud,shelf cloud,roll cloud,morning glory cloud,fire whirl,pyrocumulonimbus,ball lightning,st elmos fire,sprite,chinook,foehn,sirocco,mistral,bora,harmattan,simoom,khamsin,williwaw,katabatic wind,anticyclone,occluded front,snow roller,frost flowers,ice pellets,steam devil,gustnado,landspout,dust devil"],
+["Name a fast food chain",
+"McDonald's,Burger King,Wendy's,Taco Bell,KFC,Subway,Chick-fil-A",
+"Pizza Hut,Domino's,Popeyes,Arby's,Sonic,Five Guys,In-N-Out,Chipotle,Panda Express,Jack in the Box,Dairy Queen,Carl's Jr,Hardee's,Papa John's,Little Caesars,White Castle,Whataburger,Shake Shack,Dunkin|dunkin donuts,Starbucks,Panera,Jimmy John's,Wingstop,Culver's",
+"Del Taco,Checkers,Rally's,Zaxby's,Raising Cane's|canes,Bojangles,Church's Chicken,El Pollo Loco,Qdoba,Moe's,Firehouse Subs,Jersey Mike's,Potbelly,Wienerschnitzel,Krystal,Steak n Shake,A&W,long john silvers,captain ds,boston market,blimpie,quiznos,nandos,greggs,tim hortons,pret a manger|pret,wimpy,jollibee,mos burger,freddys,smashburger,habit burger,cook out,portillos",
+"lotteria,max burgers,hesburger,quick,harveys,mary browns,red rooster,hungry jacks,oporto,pollo campero,mang inasal,chowking,burgerfi,taco cabana,taco johns,taco bueno,runza,skyline chili,gold star chili,lees famous recipe,golden chick,back yard burgers,farmer boys,burger chef,sbarro"],
+["Name a word that rhymes with cat",
+"hat,bat,rat,mat,sat,fat,pat",
+"that,flat,chat,splat,brat,gnat,vat,spat,scat,slat,tat",
+"acrobat,diplomat,habitat,doormat,combat,wombat,thermostat,format,laundromat,aristocrat,democrat,bureaucrat,copycat,tomcat,bobcat,wildcat,polecat,muskrat,cravat,caveat,chitchat,nonfat,top hat,hard hat,begat,stat,drat,frat,sprat",
+"ziggurat,photostat,hemostat,rheostat,technocrat,plutocrat,autocrat,rat a tat|ratatat,pussycat,dingbat,samizdat,concordat,khat,plat,prat,aerostat,heliostat,cryostat,pitapat,tit for tat,muscat,commissariat,proletariat,secretariat,lariat,baccarat,ararat,jehoshaphat"],
+["Name something with wheels",
+"car,bicycle|bike,bus,truck,skateboard,train,wheelchair",
+"motorcycle,scooter,wagon,shopping cart,stroller|pram,suitcase|luggage,tricycle,roller skates,office chair,wheelbarrow,tractor,airplane|plane,go kart",
+"unicycle,segway,hoverboard,hand truck|dolly,lawn mower,trolley,cannon,rollerblades|inline skates,golf cart,forklift,chariot,stagecoach,rickshaw,gurney|hospital bed,walker,barbecue grill|grill,mars rover|rover,toy car,potters wheel,lunar rover",
+"penny farthing,velocipede,ferris wheel,zamboni,steamroller,landing gear,tea trolley,drinks cart,gun carriage,siege tower,trebuchet,spinning wheel,roller coaster,funicular,cable car,paint roller,pizza cutter"],
+["Name a profession",
+"doctor,teacher,nurse,lawyer,firefighter,police officer|cop|policeman,engineer,chef",
+"dentist,pilot,farmer,accountant,architect,scientist,artist,writer|author,actor,musician,plumber,electrician,carpenter,mechanic,programmer|software engineer|developer,veterinarian|vet,pharmacist,banker,soldier,cashier,waiter|waitress|server,journalist,photographer,designer,judge,surgeon,astronaut,librarian,psychologist",
+"therapist,paramedic,welder,baker,butcher,barber,hairdresser|hairstylist,tailor,janitor|custodian,mail carrier|mailman|postman,lifeguard,zookeeper,florist,locksmith,surveyor,economist,auditor,paralegal,optometrist,chiropractor,physical therapist|physiotherapist,radiologist,anesthesiologist,midwife,social worker,translator|interpreter,editor,curator,archaeologist,geologist,meteorologist,biologist,chemist,physicist,mathematician,statistician,diplomat,mayor,real estate agent|realtor,stockbroker,data scientist,game developer,animator,tattoo artist,dj,bartender,barista,flight attendant,air traffic controller,truck driver,taxi driver,miner,fisherman,lumberjack,blacksmith",
+"farrier,cooper,chandler,fletcher,wheelwright,thatcher,cartographer,lexicographer,etymologist,glazier,luthier,horologist|watchmaker,ostler,falconer,actuary,sommelier,perfumer,taxidermist,embalmer,mortician,coroner,ombudsman,cryptographer,epidemiologist,entomologist,ornithologist,herpetologist,ichthyologist,mycologist,volcanologist,seismologist,speleologist,oceanographer,toxicologist,podiatrist,phlebotomist,sonographer,orthodontist,prosthetist,stenographer,auctioneer,bailiff,notary,arborist,beekeeper|apiarist,vintner,cheesemonger,fishmonger,ironmonger,chimney sweep,lamplighter,town crier,scrivener,stevedore|longshoreman,cobbler,milliner,haberdasher,upholsterer,stonemason,steeplejack,dowser,foley artist,gaffer,key grip,puppeteer,ventriloquist"],
+["Name a famous scientist",
+"albert einstein|einstein,isaac newton|newton,marie curie|curie,charles darwin|darwin,galileo|galileo galilei,nikola tesla|tesla,stephen hawking|hawking",
+"thomas edison|edison,louis pasteur|pasteur,gregor mendel|mendel,copernicus,johannes kepler|kepler,niels bohr|bohr,richard feynman|feynman,michael faraday|faraday,robert oppenheimer|oppenheimer,aristotle,archimedes,pythagoras,carl sagan|sagan,neil degrasse tyson|tyson,bill nye,alan turing|turing,ada lovelace|lovelace,rosalind franklin,jane goodall|goodall,james watson|watson,francis crick|crick,dmitri mendeleev|mendeleev",
+"werner heisenberg|heisenberg,erwin schrodinger|schrodinger,max planck|planck,ernest rutherford|rutherford,james clerk maxwell|maxwell,lavoisier,robert boyle|boyle,robert hooke|hooke,leonhard euler|euler,carl friedrich gauss|gauss,alexander fleming|fleming,edward jenner|jenner,edwin hubble|hubble,paul dirac|dirac,enrico fermi|fermi,wolfgang pauli|pauli,lise meitner|meitner,emmy noether|noether,dorothy hodgkin,barbara mcclintock,rachel carson,linus pauling|pauling,jonas salk|salk,james watt|watt,volta,ampere,ohm,lord kelvin|kelvin,joule,hertz,doppler,linnaeus,lamarck,alfred wegener|wegener,tycho brahe|brahe,edmond halley|halley,william herschel|herschel,cavendish,priestley,john dalton|dalton,avogadro,leeuwenhoek,vesalius,william harvey,hippocrates,galen,euclid,ptolemy,al khwarizmi,avicenna|ibn sina,alhazen|ibn al haytham,hypatia,katherine johnson,grace hopper,chien shiung wu,vera rubin,jocelyn bell burnell,tu youyou,ramanujan,chandrasekhar,cv raman|raman,peter higgs|higgs,roger penrose|penrose",
+"ignaz semmelweis|semmelweis,john snow,ronald ross,camillo golgi|golgi,ramon y cajal|santiago ramon y cajal,lord rayleigh|rayleigh,ernst mach|mach,ludwig boltzmann|boltzmann,josiah willard gibbs|gibbs,henrietta leavitt|leavitt,annie jump cannon,cecilia payne|cecilia payne gaposchkin,maria mitchell,caroline herschel,mary anning,alfred russel wallace,alexander von humboldt|humboldt,fritz haber|haber,otto hahn|hahn,fritz zwicky|zwicky,hideki yukawa|yukawa,kitasato,shen kuo,zhang heng,brahmagupta,aryabhata,omar khayyam,al biruni,jabir ibn hayyan,frederick sanger|sanger,kary mullis,lynn margulis,james lovelock,ernst haeckel|haeckel,ronald fisher,jbs haldane|haldane,kolmogorov,henri poincare|poincare,david hilbert|hilbert,kurt godel|godel,bernhard riemann|riemann,evariste galois|galois,georg cantor|cantor,joseph fourier|fourier,laplace,lagrange,fermat,blaise pascal,rene descartes|descartes,leibniz,bernoulli,christiaan huygens|huygens,mersenne"],
+["Name a language",
+"english,spanish,french,mandarin|chinese,german,japanese,arabic",
+"italian,portuguese,russian,korean,hindi,hebrew,greek,dutch,swedish,polish,turkish,vietnamese,thai,cantonese,latin,urdu,bengali,tagalog|filipino,swahili,indonesian,persian|farsi,ukrainian",
+"norwegian,danish,finnish,icelandic,irish|irish gaelic|gaelic,welsh,scottish gaelic,czech,slovak,hungarian,romanian,bulgarian,serbian,croatian,bosnian,slovenian,albanian,lithuanian,latvian,estonian,georgian,armenian,azerbaijani,kazakh,uzbek,mongolian,tibetan,nepali,punjabi,gujarati,marathi,tamil,telugu,kannada,malayalam,sinhala,burmese,khmer,lao,malay,javanese,hawaiian,maori,samoan,amharic,somali,yoruba,igbo,hausa,zulu,xhosa,afrikaans,quechua,navajo,cherokee,catalan,basque,galician,esperanto,yiddish,american sign language|sign language|asl,haitian creole,pashto,kurdish",
+"aymara,guarani,nahuatl,yucatec maya|mayan,inuktitut,cree,ojibwe,lakota,hopi,sami,faroese,breton,cornish,manx,frisian,luxembourgish,romansh,sorbian,occitan,sardinian,friulian,ladino,maltese,chechen,tatar,chuvash,ossetian,abkhaz,sakha|yakut,ainu,uyghur,hmong,tok pisin,bislama,fijian,tongan,tahitian,chamorro,malagasy,wolof,fula|fulani,tigrinya,oromo,kinyarwanda,shona,sesotho,tswana,lingala,kikuyu,twi,ewe,tamazight|berber,coptic,aramaic,sanskrit,pali,toki pona,volapuk,interlingua,lojban,akkadian,sumerian,hittite,etruscan,gothic,old norse,old english"],
+["Name a famous landmark",
+"eiffel tower,statue of liberty,great wall of china|great wall,pyramids of giza|pyramids|great pyramid,taj mahal,colosseum,big ben",
+"mount rushmore,golden gate bridge,stonehenge,machu picchu,christ the redeemer,leaning tower of pisa|tower of pisa,sydney opera house,grand canyon,niagara falls,empire state building,mount everest,petra,parthenon|acropolis,burj khalifa,louvre,times square,white house,kremlin,buckingham palace,sagrada familia,chichen itza,angkor wat,london eye,arc de triomphe,notre dame,space needle,hollywood sign,tower bridge,brandenburg gate",
+"neuschwanstein,alhambra,hagia sophia,sistine chapel,st peters basilica,forbidden city,terracotta army,easter island|moai|rapa nui,uluru|ayers rock,victoria falls,mount fuji,petronas towers,cn tower,gateway arch,lincoln memorial,washington monument,alcatraz,the shard,westminster abbey,edinburgh castle,trevi fountain,pantheon,palace of versailles|versailles,mont saint michel,charles bridge,red square,st basils cathedral,blue mosque,great sphinx|sphinx,abu simbel,valley of the kings,table mountain,sugarloaf mountain,iguazu falls,great barrier reef,golden temple,lotus temple,gateway of india,potala palace,borobudur,bagan,ha long bay,marina bay sands,tokyo tower,tokyo skytree,fushimi inari,kinkaku ji|golden pavilion,atomium,manneken pis,cologne cathedral,matterhorn,cliffs of moher,giants causeway,hadrians wall,bran castle,hallstatt,meteora,cappadocia,pamukkale,ephesus,persepolis,burj al arab,western wall|wailing wall,dome of the rock,chrysler building,flatiron building,brooklyn bridge,central park,alamo,old faithful,half dome,devils tower,monument valley,hoover dam,mount kilimanjaro|kilimanjaro",
+"sigiriya,ellora caves|ellora,ajanta caves|ajanta,hampi,konark sun temple|konark,meenakshi temple,qutub minar,jantar mantar,shwedagon pagoda,prambanan,tikal,palenque,teotihuacan,tulum,nazca lines,sacsayhuaman,tiwanaku,great zimbabwe,lalibela,djenne,leptis magna,baalbek,palmyra,jerash,hegra|mada in saleh,gobekli tepe,catalhoyuk,newgrange,skara brae,carnac stones|carnac,lascaux,altamira,mezquita,el escorial,pena palace,belem tower,kizhi,peterhof,wieliczka salt mine,sedlec ossuary,plitvice lakes|plitvice,rila monastery,sumela monastery,geghard,derinkuyu,rock of cashel,skellig michael,fingals cave,old man of storr,trolltunga,preikestolen|pulpit rock,urnes stave church,kinderdijk,chambord,pont du gard,sainte chapelle,rocamadour,zhangjiajie,jiuzhaigou,leshan giant buddha,hanging temple,huangshan,mogao caves,registan,shah i zinda,tigers nest|taktsang,boudhanath,tanah lot,wat arun,wat pho,ayutthaya,twelve apostles,wave rock,milford sound,moeraki boulders"],
+["Name a fish",
+"salmon,tuna,goldfish,shark,clownfish,trout,cod,bass",
+"catfish,tilapia,carp,swordfish,halibut,mackerel,sardine,anchovy,pike,perch,koi,betta|siamese fighting fish,guppy,angelfish,pufferfish|blowfish,piranha,eel,flounder,herring,mahi mahi|dorado,red snapper|snapper,grouper,barracuda,marlin,stingray",
+"sturgeon,haddock,pollock,sole,turbot,plaice,walleye,bluegill,crappie,minnow,neon tetra|tetra,molly,platy,swordtail,oscar,discus,cichlid,arowana,arapaima,gar,bowfin,lamprey,hagfish,lionfish,moray eel,blue tang|tang,parrotfish,wrasse,triggerfish,boxfish,seahorse,pipefish,anglerfish,monkfish,cobia,wahoo,tarpon,bonefish,snook,sailfish,opah,mola|sunfish|ocean sunfish,whale shark,basking shark,mudskipper,lungfish,coelacanth,electric eel,zebrafish,danio,loach,gourami,pleco,corydoras",
+"oarfish,lancetfish,blobfish,fangtooth,viperfish,barreleye,hatchetfish,lanternfish,dragonfish,bristlemouth,gulper eel,frogfish,stonefish,scorpionfish,wolffish,lumpsucker,sculpin,gurnard,john dory,orange roughy,patagonian toothfish|toothfish,sablefish|black cod,lingcod,burbot,hake,whiting,dab,brill,tilefish,sheepshead,tautog,menhaden,shad,alewife,smelt,capelin,grayling,arctic char|char,taimen,muskellunge|muskie,paddlefish,sawfish,guitarfish,remora,archerfish,four eyed fish,flashlight fish,candiru,payara,goliath tigerfish|tigerfish,snakehead,bichir,elephantnose fish,knifefish,goby,blenny,mandarinfish,jawfish,flying fish,needlefish,zander,tench,rudd,bream,chub,barbel,wels catfish|wels"],
+["Name a dessert",
+"cake,ice cream,cookie,pie,brownie,cheesecake,cupcake,pudding",
+"tiramisu,donut|doughnut,apple pie,chocolate cake,creme brulee,mousse|chocolate mousse,macaron,sundae,cobbler,muffin,jello|jelly,custard,banana split,flan,cannoli,baklava,churros|churro,eclair,crepes|crepe,fudge,trifle,gelato,sorbet,milkshake,smores,key lime pie,pumpkin pie,red velvet cake,carrot cake,lava cake",
+"pavlova,panna cotta,souffle,profiterole|cream puff,mochi,gulab jamun,kheer,halva|halwa,turkish delight|lokum,apple strudel|strudel,black forest cake,sachertorte|sacher torte,bread pudding,rice pudding,tres leches,arroz con leche,alfajores,brigadeiro,sticky toffee pudding,eton mess,bakewell tart,spotted dick,crumble|apple crumble,bananas foster,baked alaska,peach melba,affogato,zabaglione,semifreddo,granita,cassata,sfogliatella,zeppole,biscotti,madeleine,clafoutis,tarte tatin,mille feuille|napoleon,paris brest,croquembouche,kouign amann,canele,opera cake,linzer torte,kaiserschmarrn,dobos torte,babka,rugelach,hamantaschen,kunafa|knafeh,basbousa,umm ali,dango,taiyaki,dorayaki,daifuku,halo halo,bingsu,mango sticky rice,kulfi,jalebi,rasgulla,ladoo,barfi,lamington,whoopie pie,funnel cake,beignet,king cake,shoofly pie,pecan pie,sweet potato pie,boston cream pie,ice cream sandwich,popsicle,snow cone,shaved ice",
+"punschkrapfen,esterhazy torte,prinzregententorte,bienenstich,rote grutze,kladdkaka,prinsesstarta,kransekake,riskrem,pastel de nata,serradura,torrijas,crema catalana,turron,leche frita,quesillo,cocada,quindim,cajeta,capirotada,bunuelos,sopapilla,picarones,suspiro limeno,chaja,martabak,klepon,cendol,ais kacang,bubur cha cha,cranachan,clootie dumpling,banoffee pie,syllabub,flummery,posset,junket,blancmange,charlotte russe,medovik,birds milk cake|ptichye moloko,paskha,kutia,makowiec,sernik,trdelnik,kremsnita,tufahija,tulumba,loukoumades|lokma,galaktoboureko,revani,sutlac,ashure,kazandibi,tavuk gogsu,malabi,qatayef,maamoul,sholeh zard,faloodeh,shrikhand,payasam,mysore pak,sandesh,rasmalai,phirni,gajar halwa,modak,bebinca"],
+["Name a superpower",
+"flight|flying,invisibility,super strength|strength,teleportation,telepathy|mind reading,super speed|speed,time travel",
+"x ray vision,healing|regeneration|healing factor,shapeshifting,telekinesis,immortality,heat vision|laser eyes,mind control,stopping time|time manipulation,breathing underwater,talking to animals,elemental control,pyrokinesis|fire control,weather control,invulnerability,super intelligence,shrinking,size changing|growing,stretching|elasticity,wall climbing|wall crawling,night vision,force field,precognition|seeing the future",
+"intangibility|phasing,duplication|cloning,power absorption|power mimicry,technopathy,electrokinesis,cryokinesis|ice powers,hydrokinesis,aerokinesis,geokinesis,photokinesis,sonic scream,echolocation,super hearing,camouflage,astral projection,possession,necromancy,luck|probability manipulation,reality warping,dimensional travel,portals|portal creation,omniscience,omnipotence,empathy,illusions,dream walking,psychometry,energy blasts,magnetism|magnetokinesis,gravity manipulation,density control,matter manipulation,animal transformation,plant control|chlorokinesis,super smell,danger sense,photographic memory,speaking every language|omnilingualism",
+"umbrakinesis|shadow control,hemokinesis|blood control,ferrokinesis,biokinesis,ergokinesis,sound manipulation,vibration manipulation,emotion manipulation,memory manipulation,retrocognition,clairvoyance,clairaudience,remote viewing,mediumship,summoning,adhesion,cartokinesis,toon force,breaking the fourth wall|fourth wall breaking,plot armor"]
+);
+/* ---------------- Twist prompts: lateral questions with their own answer lists ---------------- */
+const TWIST_HAND = [
+["Name something you'd find at the beach",
+"sand,sun|sunshine,water|ocean|sea,waves|wave,seashell|shells|shell,beach towel|towel,beach umbrella|umbrella,sunscreen|sunblock",
+"sandcastle,crab,seagull|gull,lifeguard,surfboard,bucket,spade|shovel,swimsuit|bikini,sunglasses,beach ball,flip flops,cooler,rocks,seaweed,starfish,boat,pier,sand dune|dunes,palm tree,tide,beach chair|chair",
+"driftwood,kite,frisbee,volleyball net,lifeguard tower,jellyfish,sea glass,boardwalk,ice cream truck,lighthouse,metal detector,tide pool|rock pool,sandpiper,pelican,kelp,sunburn,footprints,wetsuit,snorkel,bodyboard|boogie board,cabana,hammock,parasol,windbreak,deck chair,sandals,sun hat|hat,message in a bottle",
+"barnacle,sand dollar,sand flea,ghost crab,horseshoe crab,lugworm,groyne,breakwater,jetty,rip current,flotsam,jetsam,beach hut,bathing machine,sea foam,cuttlebone,mermaids purse,whelk,razor clam,cockle,limpet,marram grass,sea oats,coquina,sand sculpture,tan lines,buried treasure"],
+["Name something that has stripes",
+"zebra,tiger,bee,flag,candy cane,barber pole",
+"skunk,referee shirt|referee,crosswalk|zebra crossing,raccoon,chipmunk,rainbow,barcode,prison uniform,bumblebee,wasp,clownfish,watermelon,sailor shirt,road|highway,socks,shirt",
+"okapi,numbat,bongo,zebrafish,lionfish,coral snake,garter snake,mackerel,striped bass,tabby cat,badger,striped hyena|hyena,tiger shark,caterpillar,humbug,peppermint,bacon,awning,toothpaste,pajamas|pyjamas,rugby shirt,tie,scarf,venetian blinds,piano keys,lined paper|notebook paper,runway,parking lot",
+"thylacine|tasmanian tiger,quagga,banded mongoose,zebra duiker,striped possum,banded krait,sea krait,moorish idol,convict cichlid,rock strata,agate,pinstripe suit|pinstripe,seersucker,breton shirt,regimental tie,rumble strip,zebra mussel,zebra finch,tiger moth,cinnabar caterpillar,sergeant major fish,sweetlips,zorilla,aardwolf"],
+["Name something people collect",
+"stamps,coins,trading cards|cards|baseball cards,comic books|comics,seashells|shells,rocks",
+"vinyl records|records|vinyl,books,sneakers|shoes,dolls,toys,action figures,postcards,fridge magnets|magnets,autographs,art,antiques,cars,wine,watches,figurines,pins,keychains,snow globes,lego,video games,movies|dvds",
+"teacups,souvenir spoons|spoons,thimbles,bottle caps,matchbooks,butterflies,insects,fossils,crystals|minerals,perfume bottles,mugs,pens,stickers,beanie babies,funko pops,vintage clothing,sports jerseys|jerseys,ticket stubs,maps,plants,sea glass,marbles,buttons,model trains,guitars,teapots,hats,cookbooks",
+"beer mats|coasters,airsickness bags,banknotes,phone cards,cigar bands,matchboxes,keys,padlocks,hotel soaps,sugar packets,pez dispensers,lunchboxes,garden gnomes|gnomes,typewriters,cameras,clocks,meteorites,feathers,skulls,taxidermy,rubber ducks,license plates|number plates,street signs,menus,old bottles,glass insulators|insulators,barbed wire,subway tokens|tokens,medals,swords,pocket knives"],
+["Name something that comes in pairs",
+"shoes,socks,gloves,earrings,eyes,ears,twins",
+"chopsticks,dice,hands,feet,pants|trousers,scissors,glasses,headphones|earbuds,skis,boots,slippers,mittens,lungs,kidneys,wings,cymbals,maracas,salt and pepper,bookends,contact lenses,knees,jeans",
+"drumsticks,ski poles,oars,cufflinks,binoculars,tongs,crutches,dumbbells,roller skates,ice skates,bunk beds,castanets,flip flops,suspenders,chromosomes,nostrils,eyebrows,lips,hips,shoulders,tweezers,pliers,goggles,speakers,handcuffs,stilts,sneakers,elbows",
+"andirons,epaulettes,tonsils,ovaries,adrenal glands,kneepads,shin guards,earmuffs,pom poms,nunchucks,jumper cables,dueling pistols,yin and yang,atria,cherries,oxen|yoke of oxen,dioscuri,gemini,bellows"],
+["Name something sticky",
+"glue,tape,honey,chewing gum|gum,syrup|maple syrup",
+"candy,caramel,jam,peanut butter,stickers,slime,sap,glue stick,sticky notes|post it notes,spider web|cobweb,cotton candy,molasses,toffee,duct tape,velcro,band aid|bandage,lollipop,marshmallow,tar,mud",
+"superglue,rubber cement,flypaper,resin,gecko feet,frog tongue,mucus,pine sap,chameleon tongue,sundew,pitch,bitumen,nougat,taffy,mochi,sticky rice,dates,burrs,cling film|plastic wrap,gaffer tape,masking tape,epoxy,hot glue,wax,lip gloss,hair gel,blu tack|putty,sticky hands",
+"mastic,chicle,latex,birdlime,propolis,shellac,mucilage,gluten,okra,natto,treacle,golden syrup,isinglass,barnacle cement,byssus|mussel threads,hagfish slime,slug trail,honeydew,sticky toffee pudding"],
+["Name a bird that can't fly",
+"penguin,ostrich,emu,kiwi,dodo",
+"cassowary,rhea,kakapo,emperor penguin,takahe,moa,chicken",
+"weka,great auk,elephant bird,steamer duck,flightless cormorant|galapagos cormorant,inaccessible island rail,kagu,adelie penguin,king penguin,rockhopper penguin,gentoo penguin,macaroni penguin,little penguin|fairy penguin,humboldt penguin,african penguin,chinstrap penguin,magellanic penguin",
+"terror bird|phorusrhacid,gastornis,dromornis,genyornis,rodrigues solitaire|solitaire,auckland teal,campbell teal,titicaca grebe,junin grebe,giant moa,bush moa,adzebill,gough moorhen,tristan moorhen,lord howe woodhen,okinawa rail,guam rail,snoring rail,chatham rail,laysan rail,wake island rail,aldabra rail,yellow eyed penguin,snares penguin,fiordland penguin,erect crested penguin,royal penguin,galapagos penguin"],
+["Name a color that's also a fruit",
+"orange,lime,peach,cherry,plum,lemon",
+"apricot,raspberry,grape,avocado,tangerine,banana,cranberry,mango,melon,olive,strawberry,blueberry,watermelon",
+"pomegranate,kiwi,blackberry,coconut,mulberry,papaya,persimmon,fig,cantaloupe,honeydew,guava,citron,grapefruit,quince,apple,pear,date,blackcurrant,gooseberry,elderberry,boysenberry,nectarine",
+"loganberry,damson,sloe,greengage,mandarin,clementine,lychee,dragon fruit,passion fruit,kumquat,medlar,bilberry,tomato,plantain,satsuma,pumpkin"],
+["Name a mammal that lives in water",
+"whale,dolphin,seal,otter,walrus,manatee",
+"sea lion,orca|killer whale,beaver,hippo|hippopotamus,porpoise,narwhal,beluga,platypus,blue whale,humpback whale,sea otter,dugong,polar bear",
+"muskrat,mink,capybara,water vole,sperm whale,river dolphin,elephant seal,leopard seal,fur seal,harbor seal|harbour seal,monk seal,sea cow,water shrew,otter shrew,minke whale,bowhead whale,gray whale|grey whale,right whale,fin whale,sei whale,pilot whale,bottlenose dolphin,amazon river dolphin|boto|pink river dolphin,vaquita,nutria|coypu,desman,water buffalo,moose,giant otter",
+"yapok|water opossum,baiji,ganges river dolphin|susu,irrawaddy dolphin,hectors dolphin,maui dolphin,dalls porpoise,beaked whale,cuviers beaked whale,pygmy right whale,stellers sea cow,crabeater seal,ross seal,weddell seal,hooded seal,ribbon seal,bearded seal,ringed seal,harp seal,baikal seal,caspian seal,sea mink,marine otter,rakali|water rat,fishing cat,swamp rabbit,sitatunga,water chevrotain,pygmy hippo,tapir,water mongoose,otter civet,star nosed mole"],
+["Name something with a shell",
+"turtle,snail,egg,crab,tortoise,clam,oyster",
+"lobster,shrimp,armadillo,nut,peanut,coconut,mussel,scallop,beetle,taco,hermit crab,conch,walnut,pistachio,sea urchin",
+"barnacle,nautilus,cockle,whelk,limpet,abalone,periwinkle,cowrie,crayfish|crawfish,krill,bullet|shotgun shell,pie crust|pastry shell,command line|terminal,seed,acorn,chestnut,almond,pecan,cashew,brazil nut,macadamia,sunflower seed,pumpkin seed,horseshoe crab,pill bug|woodlouse|roly poly,ladybug,cicada",
+"chiton,brachiopod,ammonite,trilobite,argonaut,tusk shell,cuttlefish,ostracod,diatom,foraminifera,radiolarian,glyptodont,terrapin,sea snail,tellin,razor clam,geoduck,quahog,cannoli,vol au vent,artillery shell,coconut crab,mantis shrimp,isopod,copepod"],
+["Name an animal that lays eggs but isn't a bird",
+"snake,turtle,fish,frog,crocodile,lizard",
+"platypus,echidna,alligator,spider,ant,bee,butterfly,shark,octopus,salmon,chameleon,iguana,gecko,tortoise,sea turtle,ladybug,mosquito,fly,toad,salamander,newt,insect",
+"komodo dragon,cobra,python,crab,lobster,shrimp,snail,slug,squid,jellyfish,starfish,sea urchin,clownfish,goldfish,cod,tuna,axolotl,caecilian,tuatara,monitor lizard,termite,cockroach,praying mantis,moth,beetle,tick,mite,earthworm|worm,leech",
+"horseshoe crab,hagfish,lamprey,skate,chimaera,horn shark,zebra shark,swell shark,epaulette shark,catshark,sea hare,nautilus,cuttlefish,tardigrade,rotifer,nematode,planarian,wolf spider,trapdoor spider,velvet worm"],
+["Name something you'd find in a museum",
+"paintings|painting|art,sculptures|statues|statue,fossils|dinosaur bones|dinosaur,mummy|mummies,artifacts|artefacts",
+"skeleton,suit of armor|armor|armour,pottery|vases,security guard|guards,tour guide,gift shop,map,coins,jewelry|jewellery,tickets,exhibits,plaques|signs,benches,display case,mona lisa,swords,old cars,meteorite,gems|minerals|rocks,ancient tools,tapestry",
+"diorama,taxidermy|stuffed animals,sarcophagus,manuscripts,scrolls,relics,codex,globe,telescope,spacesuit,airplane,locomotive,mosaic,fresco,bust,frieze,totem pole,headdress,mask,audio guide,curator,docent,velvet rope,cafe,cloakroom,school group,brochure|leaflet,hieroglyphs,rosetta stone",
+"cabinet of curiosities,reliquary,canopic jar,ushabti,amphora,kylix,krater,astrolabe,orrery,armillary sphere,sextant,quipu,cuneiform tablet,papyrus,illuminated manuscript,incunabula,herbarium,specimen jar,holotype,conservator,archivist,plinth,vitrine,mannequin,period room,triptych,altarpiece,netsuke,scarab amulet,death mask,shrunken head"],
+["Name an animal sound",
+"moo,bark|woof,meow|miaow,oink,quack,baa,neigh",
+"roar,hiss,chirp|tweet,buzz,croak|ribbit,howl,growl,purr,squeak,hoot,cluck,gobble,honk,bray|hee haw,cock a doodle doo,caw,coo,bleat,whinny",
+"trumpet,bellow,squawk,chatter,grunt,snort,yelp,whimper,bugle,warble,trill,screech,cackle,yowl,bay,low,chirrup,twitter,yip,snarl,nicker,cheep,peep,whistle,click,rattle,drum,twit twoo|tu whit tu whoo",
+"stridulation|stridulate,gibber,chuff,belling,troat,boom,gabble,caterwaul,ululate,mewl,yaffle,churr,whicker,pant hoot,clack,drumming,kraa,kek"],
+["Name a word that rhymes with blue",
+"true,shoe,new,two|too|to,do,you,glue,zoo",
+"clue,crew,few,flew,grew,knew,blew,chew,view,through,queue,stew,threw,who,moo,boo,flu,sue,dew,due,hue,pew,cue,brew,screw,drew,ewe,yew,gnu,shoo,woo,coo",
+"canoe,tattoo,shampoo,bamboo,kangaroo,igloo,voodoo,cuckoo,taboo,review,pursue,construe,accrue,adieu,undo,redo,withdrew,outgrew,anew,askew,bayou,cashew,curfew,nephew,preview,renew,statue,venue,avenue,barbecue,honeydew,interview,kazoo,tutu,emu,guru,haiku,menu,tofu,kung fu,tiramisu,peekaboo,ballyhoo,buckaroo,caribou,didgeridoo,hullabaloo,rendezvous",
+"impromptu,ingenue,residue,revenue,retinue,misconstrue,ensue,imbue,subdue,eschew,purlieu,curlicue,cockatoo,yahoo,achoo|kerchoo,ado,skidoo,marabou,bugaboo,hitherto,ragout,parvenu,mildew,jujitsu,kudzu,zebu,juju,muumuu,snafu,fondue,revue,coup"],
+["Name a palindrome",
+"racecar,level,mom,dad,wow,noon,kayak,radar",
+"civic,madam,refer,rotor,stats,tenet,pop,eye,peep,deed,bob,anna,hannah,otto,eve,did,tot,sis,pup,bib,ewe,gag,nun,mum,toot,solos,sees",
+"redder,repaper,reviver,rotator,deified,minim,sagas,stets,shahs,kook,pip,poop,dud,gig,huh,nan,pap,aha,ere,maam,yay,elle,ava,ada,tattarrattat,malayalam,aibohphobia,detartrated,rotavator,kinnikinnik,sememes,reifier",
+"degged,terret,murdrum,ecce,alula,tirrit,peeweep,sooloos,ogo,oho,mim,tut"],
+["Name a type of hat",
+"baseball cap|cap,beanie,cowboy hat|stetson,top hat,sombrero,fedora",
+"beret,bowler hat|bowler|derby,bucket hat,sun hat,hard hat,helmet,crown,visor,trucker hat,party hat,chef hat|toque,witch hat,panama hat,trilby,fez,turban,bonnet,snapback,flat cap|newsboy cap,straw hat,mortarboard|graduation cap",
+"deerstalker,pork pie hat,boater,cloche,fascinator,tiara,bandana,balaclava,ushanka,kufi,kippah|yarmulke,pith helmet,akubra,bicorne,tricorne,busby,bearskin,homburg,glengarry,tam o shanter|tam,pillbox hat,slouch hat,boonie hat,conical hat|rice hat|non la,bobble hat,earflap hat,dunce cap,jester hat,propeller beanie,sailor hat,captain hat,nightcap,shower cap,hairnet",
+"zucchetto,mitre|miter,biretta,galero,kalpak,papakha,chullo,montera,sombrero cordobes,capotain,phrygian cap,petasos,pileus,kamilavkion,klobuk,tagelmust,taqiyah,songkok,peci,topi,kepi,shako,pickelhaube,sallet,bascinet,morion,coif,hennin,wimple,snood,cocked hat,gibus|opera hat,stovepipe hat,chupalla,tembel,salakot,jaapi,dhaka topi,astrakhan|karakul"],
+["Name a type of dance",
+"salsa,ballet,tango,waltz,hip hop,tap|tap dance,breakdance|breaking",
+"swing,cha cha,foxtrot,rumba,samba,flamenco,square dance,line dance,disco,twist,macarena,polka,jazz,quickstep,paso doble,jive,lindy hop,charleston,bachata,merengue,zumba,irish dance|irish dancing,belly dance|belly dancing,hula,haka,conga,limbo,mambo,can can",
+"kathak,bharatanatyam,capoeira,krumping,voguing|vogue,contra dance,ceilidh,morris dance,maypole,tarantella,mazurka,gavotte,minuet,polonaise,jota,sardana,hora,sirtaki,kolo,garba,bhangra,dabke,gumboot dance,kizomba,tinikling,cumbia,cueca,lambada,forro,frevo,moonwalk,shuffle,twerk,floss,electric slide,cotton eye joe,hokey pokey|hokey cokey,ballroom,contemporary,modern dance,lyrical",
+"pavane,galliard,sarabande,allemande,courante,bourree,rigaudon,passepied,branle,volta,saltarello,estampie,farandole,quadrille,cotillion,schottische,landler,zwiefacher,schuhplattler,hambo,polska,halling,springar,kuchipudi,odissi,manipuri,mohiniyattam,kathakali,yangge,cham,butoh,kecak,legong,saman,joget,semba,pantsula,kwassa kwassa,ndombolo,azonto,coupe decale,mapouka,joropo,marinera,carimbo,lundu,maxixe,danzon,son jarocho,huapango,jarabe tapatio,bomba,plena"],
+["Name something that melts",
+"ice,ice cream,snow,chocolate,butter,cheese,candle|wax",
+"popsicle|ice lolly,snowman,metal,plastic,crayon,glacier,icicle,sugar,marshmallow,gold,iron,steel,lava,rock,glass,ice cube,frozen yogurt",
+"lead,tin,solder,aluminum|aluminium,copper,silver,permafrost,ice caps|polar ice caps,butterscotch,caramel,gelatin|jelly,lipstick,lip balm|chapstick,coconut oil,lard,fat,gummy bears,hail,frost,sleet,iceberg,ice sculpture,hot glue,asphalt,vinyl,nylon",
+"gallium,sea ice,rime,firn,ghee,tallow,beeswax,paraffin,cocoa butter,shea butter,isomalt,ganache,fondant,ice shelf,ice sheet,snowpack,pewter,bismuth,sulfur|sulphur,quartz,basalt"],
+["Name something with teeth that isn't an animal",
+"comb,saw,zipper|zip,gear|cog",
+"chainsaw,rake,fork,key,claw clip|hair clip,grater,bread knife|serrated knife,bear trap|trap,steak knife,pinking shears,tape dispenser,hacksaw,dentures|false teeth,jigsaw,nail file|file",
+"sprocket,ratchet,bike chain|chain,circular saw,band saw,coping saw,ripsaw|rip saw,harrow,zester,meat tenderizer,pliers,vise grips,alligator clip|crocodile clip,can opener,crampons,cleats,tire chains|snow chains,leaf,venus flytrap,dandelion,mountain range",
+"rasp,hackle,carding comb,heckle,flax comb,reed,escapement wheel,crown wheel,pinion,rack and pinion,worm gear,bevel gear,ratchet wheel,timing belt,tenon saw,dovetail saw,fret saw,keyhole saw,pruning saw,bow saw,pit saw,sickle,nit comb,cultivator,tiller"],
+["Name something you'd find in a toolbox",
+"hammer,screwdriver,wrench|spanner,pliers,tape measure|measuring tape,nails,screws,drill",
+"saw,level|spirit level,utility knife|box cutter,allen key|hex key,socket set|sockets,chisel,clamp,bolts,nuts,washers,sandpaper,pencil,flashlight|torch,duct tape,electrical tape,zip ties,wire cutters,crowbar|pry bar,mallet,hacksaw,adjustable wrench,gloves",
+"staple gun,wire strippers,square|try square|speed square,stud finder,multimeter,voltage tester,awl,nail punch|center punch|punch,vise grips|locking pliers,pipe wrench,torque wrench,ratchet,rivet gun,soldering iron,glue gun,putty knife,scraper,caulk gun,plumb bob,chalk line,safety glasses|goggles,ear defenders|ear protection,glue,magnet,file,sledgehammer",
+"spokeshave,hand plane|plane,countersink,tap and die,feeler gauge,calipers,micrometer,bradawl,nail set,tack hammer,ball peen hammer,deburring tool,tin snips,nibbler,coping saw,cold chisel,bolster,scribe,marking gauge,bevel gauge,dowel jig,mole grips,circlip pliers,impact driver,flare nut wrench"],
+["Name something that's round",
+"ball,wheel,coin,sun,moon,plate,pizza,clock",
+"orange,ring,earth|globe|planet,button,cookie,donut|doughnut,bubble,cd|dvd,pancake,tire|tyre,hula hoop,frisbee,balloon,marble,pearl,bagel,eye,record|vinyl,steering wheel,tortilla,bowl,pie,cake,grape,cherry,pea",
+"lifebuoy|life ring,manhole cover,dartboard,drum,tambourine,lens,porthole,ferris wheel,roundabout,wreath,compass,stopwatch,gong,cymbal,hockey puck,tart,olive,blueberry,ball bearing,bead,iris,pupil,halo,bangle,bracelet,hoop earring,washer,lid,saucer,coaster,doorknob,shield,bubble wrap,pizza cutter,polo mint,cheerio",
+"roundel,rondel,annulus,torus,oculus,rose window,discus,quoit,boule,petanque ball,bocce ball,millstone,grindstone,potters wheel,sundial,astrolabe,gramophone record,hubcap,frisbee golf disc,bindi,sequin,cufflink,signet,tondo,medallion,doubloon,ha penny|halfpenny"],
+["Name something you can fold",
+"paper,clothes|laundry,map,napkin,towel,chair|folding chair,umbrella,origami",
+"letter,blanket,sheets,wallet,flip phone|phone,laptop,folding bike|bike,pocket knife|knife,hand fan|fan,stroller|pushchair,tent,ironing board,table,arms,poker hand|cards,ladder,glasses|sunglasses,paper airplane|paper plane,flag,shirt,pants|trousers,envelope,newspaper,cardboard box|box",
+"brochure|leaflet|pamphlet,futon,sofa bed,wheelchair,murphy bed,folding screen,protein,egg whites,batter,dough,crepe,burrito,omelette|omelet,calzone,dumpling,samosa,empanada,croissant,fortune cookie,sail,parachute,hammock,yoga mat,camp chair,step stool,music stand,easel,clothes horse|drying rack,stroller,crease",
+"sheet metal,geological strata|rock layers|fold mountains,gift wrap,fitted sheet,dinner jacket lapel|lapel,pleat,paper crane,tessellation,kirigami,accordion bellows,fan letter,pocket square,ruff,bandana,crumhorn,solar panel array,space telescope mirror,james webb telescope,airbag,pita"],
+["Name something that has a tail",
+"dog,cat,monkey,fish,horse,mouse,comet,kite",
+"lizard,cow,scorpion,peacock,beaver,squirrel,fox,rat,kangaroo,airplane|plane,coin,tadpole,dragon,mermaid,lion,tiger,pig,whale,dolphin,shark,crocodile,alligator,snake,ponytail,tailcoat|tuxedo,shirt",
+"meteor,devil,letter q|q,skunk,raccoon,opossum,lemur,peacock,pheasant,swallow,magpie,stingray,seahorse,scorpion,sperm,shooting star,kite,rocket,tail light,distribution curve|bell curve,comet,ghost,mink,weasel,otter,platypus,spider monkey,possum,chameleon,gecko,salamander,newt",
+"pliosaur,ichthyosaur,thylacine,quoll,binturong,kinkajou,coati,pangolin,lyrebird,quetzal,paradise flycatcher,long tailed tit,widowbird,whydah,fan tailed warbler,thresher shark,swordtail,lancelet,tail rotor,dovetail,pigtail,rat tail comb,cocktail,oxtail,tail end,swallowtail butterfly|swallowtail"],
+["Name something that's cold",
+"ice,snow,ice cream,freezer,fridge|refrigerator,winter,antarctica,north pole",
+"popsicle,icicle,glacier,iceberg,ice cube,frost,hail,sleet,blizzard,space,ice rink,igloo,snowman,slushie,milkshake,iced tea,iced coffee,cold brew,penguin,arctic,south pole,alaska,siberia,ice pack,frozen yogurt|froyo,sorbet,gelato",
+"gazpacho,vichyssoise,cucumber,mint,menthol,liquid nitrogen,dry ice,absolute zero,permafrost,tundra,greenland,mount everest,deep sea,cave,marble,metal,tiles,the other side of the pillow|pillow,cold compress,frozen peas,ice bath,polar plunge,hailstone,snowflake,frostbite,cold shoulder,cold feet,cold case,cold war,cold front,cold call,cold turkey,cold storage,cryogenics,morgue",
+"bose einstein condensate,boomerang nebula,cosmic microwave background,pluto,uranus,neptune,triton,oymyakon,vostok station,dome a,yakutsk,verkhoyansk,cold fusion,cold open,cold reading,cold steel,cold blood|cold blooded,cold sore,cold snap,cold chisel,cold frame,gelid,algid,frigid,cryostat,dewar,superconductor,cold plunge,snow cone,ice lolly"],
+["Name something with buttons",
+"shirt,remote|remote control|tv remote,phone,keyboard,elevator|lift,calculator,coat|jacket,microwave",
+"game controller|controller,mouse,doorbell,jeans,cardigan,blouse,accordion,cash register,atm|cash machine,vending machine,telephone,radio,camera,watch,blender,washing machine,dishwasher,oven,car|dashboard,steering wheel,crosswalk button|pedestrian crossing,arcade machine|arcade,jukebox,slot machine,pinball machine",
+"teddy bear,doll,sofa|couch,mattress,belly button|navel,button mushroom|mushroom,duffle coat,pea coat,waistcoat|vest,polo shirt,overalls|dungarees,onesie,pajamas|pyjamas,lamp,fan,headphones,speaker,hearing aid,game show buzzer|buzzer,intercom,garage door opener,key fob|car key,stopwatch,metronome,smoke alarm,thermostat,printer,scanner,photocopier,dashcam",
+"concertina,melodeon,bandoneon,launch console,nuclear football,cockpit,mixing desk|mixing console,synthesizer,drum machine,theremin,telegraph key,switchboard,teletype,typewriter,abacus,chesterfield sofa,tufted headboard,spats,gaiters,cuff|shirt cuff,henley shirt,doublet,frock coat,sherwani,cheongsam|qipao,dirndl,lederhosen,pearly king|pearly queen"],
+["Name something that's orange",
+"orange,carrot,pumpkin,basketball,traffic cone,goldfish,tiger,fox",
+"sunset,tangerine,mango,cheddar cheese|cheddar,fire|flame,autumn leaves|leaves,monarch butterfly,clownfish,orangutan,hi vis vest|safety vest|construction vest,life jacket,prison jumpsuit,sweet potato,cantaloupe,apricot,papaya,clementine,satsuma,butternut squash,jack o lantern,traffic light|amber light,koi",
+"persimmon,kumquat,marigold,california poppy,tiger lily,golden gate bridge,rust,terracotta,brick,copper,amber,robin,oriole,paprika,saffron,thai iced tea,buoy,life raft,embers,lava,cheese puffs,mac and cheese|macaroni and cheese,carrot cake,salmon,egg yolk,papaya,nasturtium,clementine,sea buckthorn,turmeric latte,orange juice,orange soda",
+"aperol spritz|aperol,sea urchin roe|uni,garibaldi fish,cock of the rock,flame bowerbird,crown of thorns starfish,harlequin toad,golden poison frog,orange roughy,tufted puffin beak|puffin beak,mars|red planet,io,titan haze|titan,ochre,annatto,red leicester,mimolette,thai tea,cantaloupe,dutch royal family|house of orange,orange order,inmate,orangery"],
+["Name a job where you wear a uniform",
+"police officer|cop|policeman,firefighter|firefighter|fireman,nurse,soldier,pilot,chef,flight attendant",
+"mail carrier|postman|mailman,security guard,referee,waiter|waitress,paramedic,sailor,judge,astronaut,prison guard,park ranger,zookeeper,mechanic,delivery driver,bus driver,train conductor|conductor,cashier,fast food worker,barista,janitor,lifeguard,surgeon,doctor,dentist,athlete,baseball player,football player",
+"vet|veterinarian,pharmacist,lab technician,factory worker,construction worker,train driver,coast guard,marine,navy officer,air force pilot,customs officer,border agent,traffic warden|parking enforcement,crossing guard,butler,maid,bellhop,doorman,concierge,priest,nun,monk,jockey,umpire,cheerleader,mascot,clown,chauffeur,valet,ticket inspector,tour guide,beekeeper,scuba diver,ski instructor,hairdresser,nanny,scout,sheriff",
+"beefeater|yeoman warder,swiss guard,queens guard|kings guard,mountie,gendarme,carabiniere,bobby,lollipop lady|lollipop man,hazmat technician,bomb disposal|bomb technician,smokejumper,hotshot,sommelier,maitre d,porter,steward,purser,boatswain,midshipman,cadet,usher,choirboy|chorister,acolyte,altar server,dentist hygienist|dental hygienist,phlebotomist,radiographer,orderly,stenographer,bailiff,court clerk,croupier,dealer,jockey silks,matador,picador,rodeo clown,ringmaster"],
+["Name a famous ship",
+"titanic,mayflower,santa maria,black pearl,enterprise|uss enterprise,noahs ark|ark",
+"queen mary,lusitania,bismarck,yamato,uss arizona|arizona,uss constitution|old ironsides,hms victory|victory,endeavour,hms beagle|beagle,nina,pinta,golden hind,mary rose,cutty sark,endurance,bounty|hms bounty,flying dutchman,nautilus,queen annes revenge,millennium falcon",
+"vasa,fram,kon tiki,calypso,argo,pequod,hispaniola,uss monitor|monitor,merrimack|css virginia,uss missouri|missouri,carpathia,andrea doria,edmund fitzgerald,exxon valdez,costa concordia,mary celeste,essex,amistad,bluenose,britannic,olympic,great eastern,potemkin|battleship potemkin,aurora|cruiser aurora,graf spee|admiral graf spee,hms hood|hood,hms dreadnought|dreadnought,ever given,oasis of the seas,queen elizabeth 2|qe2,rainbow warrior,kursk,erebus,terror|hms terror,whydah,the african queen|african queen,orca,red october,yellow submarine,going merry,thousand sunny,jolly roger",
+"la belle,batavia,sea venture,half moon,victoria,nuestra senora de atocha|atocha,san jose,adventure galley,hms resolute|resolute,uss thresher|thresher,uss indianapolis|indianapolis,uss maine|maine,lancastria,wilhelm gustloff,doña paz|dona paz,sewol,estonia|ms estonia,general belgrano|belgrano,sirius,savannah|ss savannah,turtle,hunley|h l hunley,mary rose,henry grace a dieu,santisima trinidad,soleil royal,sovereign of the seas,great harry,golden hinde,dawn treader,nostromo,surprise|hms surprise,interceptor,dauntless,black freighter,nebuchadnezzar,serenity,rocinante,heart of gold,red dwarf"],
+["Name a word that starts with QU",
+"queen,quick,quiet,quilt,quiz,quack,question,quarter",
+"quote,quest,quit,quite,quality,quantity,queue,quarrel,quench,quirk,quirky,quail,quartz,quay,quell,query,quiche,quill,quince,quinoa,quip,quiver,quota,quake,qualify,quarantine,quarry,quart,quantum",
+"quorum,quadrant,quaint,qualm,quash,quasar,quaver,queasy,quibble,quicksand,quintessential,quixotic,quokka,quetzal,quahog,quagmire,quandary,quatrain,queso,quesadilla,quickstep,quintet,quotient,quoit,quinine,quisling,quietus,quire,quadruple,quadrilateral,quarterback,quicksilver,quizzical,quench,quell,quilting,quietude",
+"quaff,quahaug,quaich,quango,quarto,quassia,quatrefoil,quaternary,quean,quern,quiddity,quidnunc,quiescent,quillet,quincunx,quinquennial,quinsy,quintal,quipu,quirt,quisquous,quixotism,quodlibet,quoin,quondam,quotidian,qursh,quagga,quintain,quadriga,quadrivium,quale,quiff"],
+["Name a word that ends in -ology",
+"biology,psychology,geology,technology,ecology,zoology,astrology,theology",
+"sociology,archaeology|archeology,anthropology,cosmology,mythology,ideology,methodology,terminology,chronology,apology,meteorology,criminology,dermatology,cardiology,neurology,oncology,radiology,pathology,physiology,pharmacology,toxicology,virology,immunology",
+"entomology,ornithology,herpetology,ichthyology,mycology,paleontology|palaeontology,seismology,volcanology|vulcanology,etymology,phonology,morphology,musicology,egyptology,numerology,graphology,phrenology,futurology,ufology,cryptozoology,mixology,gerontology,endocrinology,gastroenterology,hematology|haematology,nephrology,ophthalmology,urology,rheumatology,pulmonology,audiology,histology,cytology,embryology,epidemiology,trilogy,anthology,tautology,topology,typology,ontology,epistemology,eschatology",
+"campanology,oenology,horology,vexillology,speleology,glaciology,hydrology,limnology,petrology,mineralogy,climatology,doxology,hagiology,etiology|aetiology,deontology,axiology,phenomenology,soteriology,christology,ecclesiology,pneumatology,dendrology,bryology,lichenology,malacology,myrmecology,arachnology,cetology,primatology,mammalogy,oology,nidology,conchology,palynology,dendrochronology,selenology,areology,uranology,tribology,rheology,metrology,cartology,serology,trichology,odontology,proctology,andrology,gynecology|gynaecology,teratology,thanatology,sexology,penology,victimology,kremlinology,scientology,genealogy"],
+["Name something you'd find in a hospital",
+"doctor,nurse,bed|hospital bed,wheelchair,stethoscope,x ray|xray,syringe|needle,ambulance",
+"patient,scrubs,surgeon,medicine,bandage,iv|drip|iv drip,heart monitor|monitor,gloves,mask,stretcher|gurney,operating room|operating theatre,emergency room|er|a and e,waiting room,thermometer,crutches,cast,defibrillator,mri|mri machine,ventilator,oxygen tank|oxygen,blood,pharmacy,hospital gown|gown",
+"ct scanner|ct scan,cafeteria,gift shop,flowers,balloons,chart|medical chart,clipboard,wristband,call button,bedpan,scalpel,forceps,stitches|sutures,ultrasound,incubator,maternity ward,nicu,icu,morgue,chapel,elevator,vending machine,hand sanitizer,curtain,blood pressure cuff,pulse oximeter,catheter,dialysis machine,helipad,receptionist,porter,orderly,visitors,newborn babies|babies",
+"sphygmomanometer,otoscope,ophthalmoscope,laryngoscope,endoscope,speculum,tourniquet,retractor,cannula,trocar,nebulizer,crash cart,autoclave,centrifuge,petri dish,cadaver,anesthesiologist,phlebotomist,triage nurse,chaplain,pathology lab,blood bank,sterile field,linen cart,sharps container,biohazard bin,specimen cup,tongue depressor,reflex hammer,bone saw,gamma camera,linear accelerator"],
+["Name a sport played on ice",
+"ice hockey|hockey,figure skating,curling,speed skating",
+"bobsleigh|bobsled,luge,skeleton,ice dancing,short track speed skating|short track,bandy,synchronized skating|synchronised skating",
+"ringette,broomball,ice climbing,ice fishing,ice racing,iceboating|ice yachting,ice speedway,sledge hockey|para ice hockey|sled hockey,pond hockey,ice stock sport|bavarian curling,crashed ice|ice cross downhill",
+"eisstockschiessen,kicksled racing,ice canoeing,ice swimming,ice golf,ice polo,skijoring,ice kiting,snow kiting,ice dragon boat,ice sailing,ice stock,crokicurl,underwater ice diving|ice diving,barrel jumping"],
+["Name a sport played in or on water",
+"swimming,water polo,diving,surfing,rowing",
+"kayaking,canoeing,sailing,artistic swimming|synchronized swimming,water skiing|waterskiing,wakeboarding,kitesurfing,windsurfing,white water rafting|rafting,paddleboarding|stand up paddleboarding|sup,triathlon,open water swimming",
+"underwater hockey,underwater rugby,spearfishing,freediving,scuba diving,dragon boat racing,canoe polo,bodyboarding,jet ski racing,powerboat racing,fin swimming,cliff diving,high diving,bodysurfing,skimboarding,water volleyball,aquathlon,lifesaving,surf lifesaving,yachting,slalom canoeing|canoe slalom",
+"underwater orienteering,underwater football,aquabike,flyboarding,hydrofoiling|foiling,kneeboarding,barefoot skiing,tubing,cable wakeboarding,outrigger canoeing|va a,gig racing,coastal rowing,swimrun,ice swimming,octopush,sea kayaking,river boarding|hydrospeed,canyoning,dinghy racing,match racing,catamaran racing"],
+["Name a part of the leg or foot",
+"knee,ankle,toe,heel,thigh,foot",
+"shin,calf,sole,arch,hamstring,kneecap|patella,femur,shinbone|tibia,achilles tendon|achilles,toenail,big toe,ball of the foot,instep,quadriceps|quads",
+"fibula,meniscus,acl|anterior cruciate ligament,glutes|gluteus maximus,hip,groin,little toe|pinky toe,metatarsals|metatarsal,tarsals|tarsal,talus,calcaneus,knee pit|back of the knee,ankle bone,cuticle,shin splints,sciatic nerve,femoral artery,saphenous vein,adductor,soleus,gastrocnemius",
+"popliteal fossa,hallux,phalanges,navicular,cuboid,cuneiform,sesamoid,plantar fascia,malleolus,tibialis anterior,peroneus longus,sartorius,gracilis,vastus lateralis,rectus femoris,biceps femoris,semitendinosus,iliotibial band|it band,greater trochanter,lateral malleolus,dorsalis pedis,fifth metatarsal"],
+["Name a bone in the human body",
+"skull,femur,rib,spine|backbone,pelvis,jaw|jawbone",
+"tibia|shinbone,fibula,humerus,radius,ulna,collarbone|clavicle,kneecap|patella,shoulder blade|scapula,sternum|breastbone,vertebra|vertebrae,tailbone|coccyx,hip bone,cheekbone",
+"mandible,maxilla,sacrum,metacarpal,metatarsal,phalanx|phalanges,carpals|carpal,tarsals|tarsal,stapes|stirrup,incus|anvil,malleus|hammer,hyoid,talus,calcaneus|heel bone,ilium,ischium,pubis,atlas,axis,zygomatic|zygomatic bone,nasal bone,frontal bone,parietal bone,temporal bone,occipital bone",
+"sphenoid,ethmoid,vomer,lacrimal bone,palatine bone,inferior nasal concha,navicular,cuboid,cuneiform,scaphoid,lunate,triquetrum,pisiform,trapezium,trapezoid,capitate,hamate,sesamoid,manubrium,xiphoid process,fabella"],
+["Name an organ in the human body",
+"heart,brain,lungs|lung,liver,kidney|kidneys,stomach,skin",
+"intestines|intestine,small intestine,large intestine|colon,bladder,pancreas,spleen,gallbladder,appendix,eyes|eye,thyroid,esophagus|oesophagus",
+"tongue,uterus|womb,ovaries|ovary,prostate,adrenal glands|adrenal gland,pituitary gland,pineal gland,thymus,tonsils,larynx|voice box,trachea|windpipe,diaphragm,rectum,duodenum,lymph nodes,bone marrow,placenta,testes|testicles",
+"hypothalamus,cerebellum,medulla oblongata,parathyroid,mesentery,interstitium,jejunum,ileum,cecum|caecum,pharynx,epiglottis,thalamus,amygdala,hippocampus,islets of langerhans,seminal vesicle,fallopian tubes|fallopian tube,ureter,urethra,cochlea,retina,salivary glands|salivary gland,lacrimal gland"],
+["Name a job in the film industry",
+"director,actor|actress,producer,screenwriter|writer,editor|film editor,cinematographer|director of photography|dp",
+"stunt double|stuntman|stunt performer,makeup artist,costume designer,set designer,composer,camera operator,extra|background actor,animator,casting director,sound engineer|sound mixer,special effects artist|vfx artist,lighting technician",
+"gaffer,grip,key grip,best boy,boom operator,script supervisor,location scout|location manager,foley artist,colorist,production designer,art director,choreographer,dolly grip,focus puller,clapper loader,production assistant|runner,line producer,assistant director,storyboard artist,dialect coach,stand in,body double,hairstylist,prop master,set decorator,unit publicist,film critic,projectionist",
+"best boy grip,best boy electric,rigging gaffer,matte painter,rotoscope artist,compositor,greensman,swing gang,dresser,loader,data wrangler,digital imaging technician|dit,video assist,craft services,unit still photographer,armorer,wrangler,intimacy coordinator,stunt coordinator,second unit director,script doctor,sound designer,re recording mixer,adr supervisor,music supervisor,negative cutter,title designer,completion bond agent"],
+["Name a job that involves working with animals",
+"vet|veterinarian,zookeeper,farmer,dog groomer|groomer,dog walker",
+"animal trainer|dog trainer,vet nurse|veterinary nurse|vet tech,marine biologist,zoologist,horse trainer,jockey,shepherd,cowboy|rancher,beekeeper,pet sitter,animal control officer,wildlife photographer,fisherman,kennel worker,park ranger",
+"farrier,breeder,falconer,ornithologist,entomologist,herpetologist,primatologist,ethologist,wildlife rehabilitator,game warden,animal behaviourist|animal behaviorist,aquarist,dolphin trainer,lion tamer,circus trainer,pet shop owner,butcher,slaughterman,taxidermist,poultry farmer,dairy farmer,fish farmer,stable hand|groom,riding instructor,mahout,goatherd,swineherd,canine handler|k9 officer,guide dog trainer",
+"ichthyologist,mammalogist,arachnologist,malacologist,lepidopterist,myrmecologist,cetologist,apiarist,vermiculturist,chick sexer,equine dentist,animal chiropractor,veterinary pathologist,zoo nutritionist,herpetoculturist,snake milker|venom extractor,shark wrangler,pearl diver,horse whisperer,sheep shearer,cattle drover,wrangler,trapper,gamekeeper,ghillie|gillie,kennel master,houndsman,whipper in"],
+["Name a type of knife",
+"chef's knife|chefs knife|chef knife,bread knife,butter knife,steak knife,pocket knife|penknife,swiss army knife",
+"paring knife,cleaver,machete,dagger,bowie knife|bowie,santoku,fillet knife,boning knife,utility knife,switchblade,butterfly knife|balisong,scalpel,box cutter,craft knife|x acto knife,putty knife,palette knife,hunting knife,carving knife",
+"stiletto,kukri,karambit,tanto,cheese knife,oyster knife,ulu,kris|keris,dirk,sgian dubh,bayonet,throwing knife,letter opener,mezzaluna,nakiri,usuba,deba,yanagiba,gyuto,puukko,laguiole,navaja,flick knife,survival knife,diving knife,grapefruit knife,tomato knife,electric knife,ceramic knife,tactical knife,trench knife,push dagger",
+"kiridashi,kopis,seax,misericorde,rondel dagger,poniard,main gauche,katar,jambiya,khanjar,pesh kabz,bolo,parang,golok,kerambit,sax,scramasax,falx,kard,qama,yatagan,barong,cinquedea,baselard,bollock dagger,quillon dagger,shiv,drawknife,skiving knife,clam knife,lame,tourne knife|bird's beak knife,mandoline blade"],
+["Name a magical object from myth or fiction",
+"magic wand|wand,magic carpet|flying carpet,genie lamp|magic lamp|aladdins lamp,crystal ball,holy grail,excalibur",
+"philosophers stone|sorcerers stone,invisibility cloak,elder wand,the one ring|one ring,glass slipper,ruby slippers,pandoras box,golden fleece,mjolnir|thors hammer,magic mirror,golden goose,magic beans,seven league boots,horn of plenty|cornucopia,fountain of youth",
+"time turner,marauders map,sorting hat,golden snitch,horcrux,resurrection stone,lightsaber,infinity gauntlet,infinity stones,tesseract,sonic screwdriver,tardis,triforce,master sword,arkenstone,palantir,silmarils,ark of the covenant,spear of destiny,trident of poseidon,helm of darkness,aegis,winged sandals|talaria,caduceus,gungnir,draupnir,brisingamen,andvaranaut,tarnhelm,sampo,cauldron of dagda,stone of destiny|stone of scone,ring of gyges,midas touch,babel fish,deathly hallows",
+"tarnkappe,gleipnir,megingjord,jarngreipr,skidbladnir,hofund,ame no murakumo|kusanagi,yata no kagami,yasakani no magatama,ruyi jingu bang,cintamani,vajra,sudarshana chakra,kaustubha,syamantaka,brahmastra,amrita,ambrosia,nectar of the gods,mead of poetry,cap of hades,girdle of hippolyta,apple of discord,golden apples,pithos,shamir,urim and thummim,seal of solomon,hand of glory,mandrake root,bezoar,dragons teeth,dyrnwyn,caladbolg,claiomh solais,fragarach,gae bolg,lia fail,cauldron of rebirth"],
+["Name a vegetable that grows underground",
+"potato,carrot,onion,garlic,beet|beetroot,radish",
+"turnip,parsnip,sweet potato,yam,ginger,cassava|yuca|manioc,taro,jicama,rutabaga|swede,celeriac,horseradish,shallot,daikon,leek,peanut",
+"turmeric,burdock,salsify,jerusalem artichoke|sunchoke,lotus root,water chestnut,wasabi,galangal,arrowroot,konjac,scorzonera|black salsify,skirret,tiger nut|chufa,kohlrabi,fennel bulb,radicchio root,chicory root,ginseng,licorice root|liquorice root,beetroot",
+"yacon,oca,mashua,ulluco,malanga|yautia,ensete,chinese artichoke|crosne,earthnut|pignut,camas,bitterroot,breadroot|prairie turnip,arracacha,achira,maca,mauka,ahipa,elephant foot yam,lesser galangal,fingerroot,zedoary,kencur,hamburg parsley|parsley root,black radish,rampion"],
+["Name a sport that uses a racket or bat",
+"tennis,baseball,cricket,badminton,table tennis|ping pong",
+"squash,softball,racquetball,pickleball,padel,rounders",
+"real tennis|royal tennis|court tennis,platform tennis,paddle tennis,beach tennis,frescobol,speedminton|crossminton,stoolball,rackets|racquets,vigoro,kilikiti|samoan cricket,lapta,pesapallo,brannboll,kickball,wiffle ball,stickball,t ball|tee ball",
+"bat and trap,knur and spell,oina,palant,gilli danda,tip cat,town ball,old cat,cricket sixes,indoor cricket,kwik cricket,french cricket,jeu de paume,pelota mixteca,basque pelota,trinquete,xare,soft tennis,racketlon,touchtennis,pop tennis,tamburello"],
+["Name a musical instrument with strings",
+"guitar,violin,piano,harp,cello,bass|bass guitar",
+"ukulele,banjo,viola,double bass|upright bass,mandolin,electric guitar,acoustic guitar,harpsichord,sitar,lute,lyre,zither",
+"dulcimer,hammered dulcimer,bouzouki,balalaika,koto,shamisen,erhu,oud,pipa,guzheng,autoharp,hurdy gurdy,charango,cavaquinho,twelve string guitar,pedal steel guitar|steel guitar,dobro|resonator guitar,clavichord,psaltery,kora,sarangi,santoor,veena,tanpura|tambura,baglama|saz,kantele",
+"theorbo,cittern,gittern,rebab,rebec,viola da gamba|viol,viola damore,baryton,nyckelharpa,hardanger fiddle,crwth,gusli,bandura,domra,kobza,tres,cuatro,requinto,guitarron,vihuela,valiha,ngoni,akonting,sanxian,yueqin,gayageum,geomungo,haegeum,dan bau,dan tranh,ektara,dotara,rudra veena,sarod,esraj,dilruba,swarmandal,berimbau,diddley bow,washtub bass,aeolian harp"]
+];
+/* Hidden bases: never asked directly, used to build the constraint twists. */
+const HIDDEN_BASES = [
+["_countries_americas_oceania",
+"united states|usa|us|america|united states of america,canada,mexico,brazil,australia,argentina",
+"new zealand,chile,peru,colombia,cuba,jamaica,venezuela,ecuador,bolivia,uruguay,paraguay,costa rica,panama,haiti,dominican republic,guatemala,honduras,el salvador,nicaragua,fiji,papua new guinea",
+"bahamas,barbados,trinidad and tobago,belize,guyana,suriname,samoa,tonga,solomon islands,vanuatu",
+"grenada,saint lucia,saint kitts and nevis,saint vincent and the grenadines,antigua and barbuda,dominica,kiribati,tuvalu,nauru,palau,marshall islands,micronesia"],
+["_mammals",
+"dog,cat,lion,tiger,elephant,horse,cow,monkey,bear,giraffe,zebra,rabbit",
+"wolf,fox,deer,pig,sheep,goat,mouse,rat,squirrel,kangaroo,koala,panda,gorilla,chimpanzee,hippo|hippopotamus,rhino|rhinoceros,camel,cheetah,leopard,bat,hamster,otter,raccoon,skunk,beaver,moose,sloth,hedgehog,polar bear,donkey,llama",
+"jaguar,cougar|puma|mountain lion,lynx,bobcat,hyena,jackal,meerkat,mongoose,badger,weasel,ferret,mole,shrew,porcupine,armadillo,anteater,aardvark,opossum,wombat,platypus,echidna,tapir,okapi,antelope,gazelle,impala,wildebeest|gnu,bison,buffalo,yak,ox,elk,reindeer|caribou,alpaca,orangutan,baboon,lemur,gibbon,chinchilla,guinea pig,gerbil,chipmunk,marmot,groundhog,prairie dog,ibex,mink,ermine,wolverine,red panda,hare,ape,ram,ewe,sow,hog,kid,cub",
+"pangolin,aye aye,tarsier,loris,binturong,fossa,quokka,numbat,quoll,bilby,bandicoot,kinkajou,coati,olingo,capybara,agouti,paca,tenrec,solenodon,saiga,gerenuk,dik dik,klipspringer,springbok,kudu,eland,nyala,bongo,sitatunga,takin,markhor,tahr,chamois,muntjac,chevrotain,babirusa,warthog,peccary,hyrax,dhole,fennec|fennec fox,aardwolf,civet,genet,serval,caracal,margay,ocelot,jaguarundi,kodkod,sun bear,sloth bear,spectacled bear,colugo,vicuna,guanaco,zorilla,honey badger|ratel,stoat,marten,fisher,sable,degu,jerboa,dormouse,vole,lemming,muskrat,nutria|coypu,gundi,springhare,hutia,zebu,gaur,banteng,kouprey,dzo,gayal"]
+];
+BANK.push(...TWIST_HAND, ...HIDDEN_BASES);
+/* Categories whose answers come entirely from Wikidata (opendata.js). Without that file they stay hidden. */
+const WIKI_CATEGORIES = ["Name a river","Name a mountain","Name an island","Name a lake","Name a desert","Name a volcano","Name a constellation",
+  "Name a breed of horse","Name a novelist","Name a poet","Name a composer","Name an explorer","Name an inventor","Name a currency",
+  "Name a cocktail","Name a type of bread","Name a soup","Name a martial art","Name a card game","Name a music genre","Name a typeface",
+  "Name a type of fabric","Name a spice or herb","Name a god or goddess","Name a famous bridge","Name a type of shoe","Name a piece of furniture",
+  "Name a famous novel","Name a famous painting","Name a video game","Name a band","Name a famous film","Name a sport"];
+BANK.push(...WIKI_CATEGORIES.map(q => [q, "", "", "", ""]));
+
+/* Extra answers for the original categories: [prompt, common, uncommon, rare, long shot] additions. */
+const EXTRA = {
+  "Name a fruit": ["","","blood orange,muskmelon,crabapple|crab apple,prickly pear|cactus pear,red banana,granadilla,sugar apple|sweetsop,white currant,sloe","monstera deliciosa,ice cream bean,peanut butter fruit,canistel|egg fruit,marang,langsat,lucuma,akebia,hala fruit,honeyberry"],
+  "Name a vegetable": ["","","napa cabbage,red cabbage,sweet corn,shiitake,portobello,broccolini,microgreens,watermelon radish","skirret,good king henry,sea kale,scorzonera,crosnes,ulluco,mashua,yacon"],
+  "Name a color": ["","","baby blue,neon green,dusty rose,rose gold,midnight blue,tangerine,burnt orange,lemon yellow","mummy brown,dragons blood,international klein blue|klein blue,tiffany blue,schweinfurt green,scheeles green,mauveine,bleu de france"],
+  "Name a bird": ["","","kite,harrier,goshawk,merlin,buzzard,nighthawk,purple martin|martin,crossbill,siskin,redstart,stonechat,linnet","wallcreeper,bearded reedling,firecrest,ruff,dotterel,smew,scaup,goosander,garganey,wryneck"],
+  "Name a vehicle": ["","","electric scooter|e scooter,e bike|electric bike,minibus,coach,trailer,race car|racecar,formula 1 car|f1 car","quadricycle,tandem,trishaw,sidecar"],
+  "Name something you'd find in a kitchen": ["","","ice cream scoop,pasta machine,pizza cutter,bread box,dish rack,oven light","fondue set,spaetzle maker,tortilla press,molcajete,suribachi,tava,karahi,idli steamer"],
+  "Name a sport played with a ball": ["","","dodgeball,rugby sevens,bowls|lawn bowls,polocrosse","jorkyball,kin ball,buzkashi,calcio storico,underwater rugby,eton fives|fives,real tennis"],
+  "Name a breakfast food": ["","","breakfast potatoes,home fries,cottage cheese,toaster pastry,porridge oats,fried rice","hagelslag,vegemite toast,marmite toast,beans on toast,kaiserschmarrn"]
+};
+for (const row of BANK) { const e = EXTRA[row[0]]; if (e) e.forEach((s,i) => { if (s) row[i+1] += "," + s; }); }
+
+/* ---------------- Constants ---------------- */
+const ROUNDS = 7, SECONDS = 25, MAXS = ROUNDS * 10;
+const TIERS = {
+  c:{name:"Common",pts:1,sq:"⬜"}, u:{name:"Uncommon",pts:4,sq:"🟩"},
+  r:{name:"Rare",pts:7,sq:"🟨"}, x:{name:"Long shot",pts:10,sq:"🟧"},
+  miss:{name:"Not on the list",pts:0,sq:"⬛"}, time:{name:"Out of time",pts:0,sq:"⬛"}
+};
+const MILES = [
+  {s:0,km:0,label:"Launch pad"},
+  {s:7,km:12,label:"Airliners cruise just below"},
+  {s:14,km:50,label:"Top of the stratosphere · ozone layer"},
+  {s:21,km:85,label:"Meteors burn up here"},
+  {s:28,km:100,label:"Kármán line · space begins"},
+  {s:35,km:408,label:"International Space Station"},
+  {s:42,km:540,label:"Hubble Space Telescope"},
+  {s:49,km:2000,label:"Edge of low Earth orbit"},
+  {s:56,km:20200,label:"GPS satellites"},
+  {s:63,km:35786,label:"Geostationary orbit"},
+  {s:70,km:384400,label:"The Moon"}
+];
+const EPOCH = new Date(2026, 10, 1);
+
+/* ---------------- Open data (Wikidata, CC0) merged into the bank ---------------- */
+{
+  const OD = (typeof window !== "undefined" && window.OUTLIER_OPEN_DATA) || {};
+  // Wikidata uses formal names ("Amazon River", "Lake Victoria", "United States dollar"); add the short forms people type.
+  const shortForms = (q, entry) => {
+    const name = entry.split("|")[0], extra = [];
+    let m = name.match(/^(.+?) (river|lake|music|soup|mountains|mountain|volcano|desert|island|islands|bread|dance|sauce)$/i); if (m) extra.push(m[1]);
+    m = name.match(/^(lake|mount|mt\.?|river|isle of|the) (.+)$/i); if (m) extra.push(m[2]);
+    if (q === "Name a currency"){ const w = name.split(" "); if (w.length > 1) extra.push(w[w.length-1]); }
+    return extra.length ? entry + "|" + extra.join("|") : entry;
+  };
+  for (const row of BANK){
+    const e = OD[row[0]]; if (!e) continue;
+    ["c","u","r","x"].forEach((t,i) => {
+      const list = Array.isArray(e[t]) ? e[t].filter(s => typeof s === "string" && !s.includes(",")).map(s => shortForms(row[0], s)) : [];
+      if (list.length) row[i+1] += "," + list.join(",");
+    });
+  }
+}
+
+/* ---------------- Answer matching ---------------- */
+function norm(s){
+  return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/\+\+/g," plus plus ").replace(/#/g," sharp ").replace(/['’`]/g,"").replace(/&/g," and ")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/^(the|a|an) /,"");
+}
+function cap(s){ return s.replace(/(^|\s)([a-z])/g, (m,a,b) => a + b.toUpperCase()); }
+const PROMPTS = BANK.map(([q,...tiers]) => {
+  const map = new Map(), canon = {c:[],u:[],r:[],x:[]};
+  ["c","u","r","x"].forEach((t,i) => {
+    tiers[i].split(",").map(e => e.trim()).filter(Boolean).forEach(entry => {
+      const al = entry.split("|"), name = cap(al[0].trim());
+      let fresh = false;
+      al.forEach(a => {
+        const k = norm(a);
+        if (k && !map.has(k)) { map.set(k,{t,name}); fresh = true; }
+        const k2 = k.replace(/ /g,"");
+        if (k2 && !map.has(k2)) map.set(k2,{t,name});
+      });
+      if (fresh) canon[t].push(name);
+    });
+  });
+  return {q, map, canon};
+});
+/* ---------------- Constraint twists, generated from the bank ---------------- */
+// Every accepted answer comes from an existing list, so the twist can never accept a wrong answer.
+// Rarity is re-ranked inside the twist: the best-known matches become Common, the obscure ones Long shots.
+const TWIST_Q = new Set(TWIST_HAND.map(r => r[0]));
+const answerCount = p => p.canon.c.length + p.canon.u.length + p.canon.r.length + p.canon.x.length;
+PROMPTS.forEach(p => p.kind = p.q.startsWith("_") || answerCount(p) < 15 ? "hidden" : TWIST_Q.has(p.q) ? "twist" : "classic");
+{
+  const byQ = q => PROMPTS.find(p => p.q === q);
+  const L = n => norm(n).replace(/ /g, "");
+  const words = n => norm(n).split(" ").length;
+  const rank = {c:0, u:1, r:2, x:3};
+  // opts.aliases: also accept a thing when one of its alternate names passes (for "contains" twists).
+  function derive(q, sources, test, opts = {}){
+    if (PROMPTS.some(p => p.q === q)) return;
+    const merged = new Map(), baseTier = new Map(), order = [];
+    for (const sq of sources){
+      const sp = byQ(sq); if (!sp) continue;
+      for (const [k, v] of sp.map){
+        if (merged.has(k) || !(test(v.name) || (opts.aliases && test(k)))) continue;
+        merged.set(k, v.name);
+        if (!baseTier.has(v.name)){ baseTier.set(v.name, v.t); order.push(v.name); }
+      }
+    }
+    if (order.length < 10) return;
+    const sorted = order.map((n,i) => [n,i]).sort((a,b) => rank[baseTier.get(a[0])] - rank[baseTier.get(b[0])] || a[1]-b[1]).map(a => a[0]);
+    const tierOf = new Map(), N = sorted.length;
+    sorted.forEach((n,i) => { const f = i / N; tierOf.set(n, f < 0.12 ? "c" : f < 0.35 ? "u" : f < 0.65 ? "r" : "x"); });
+    const map = new Map(), canon = {c:[], u:[], r:[], x:[]};
+    for (const [k, n] of merged) map.set(k, {t: tierOf.get(n), name: n});
+    sorted.forEach(n => canon[tierOf.get(n)].push(n));
+    PROMPTS.push({q, map, canon, kind: "twist"});
+  }
+  const COUNTRIES = ["Name a country in Europe","Name a country in Asia","Name a country in Africa","_countries_americas_oceania"];
+  const ANIMALS = ["_mammals","Name an animal that lives in the ocean","Name a bird","Name an insect","Name a fish"];
+  derive("Name a country that starts with S", COUNTRIES, n => L(n).startsWith("s"));
+  derive("Name a country that ends with the letter A", COUNTRIES, n => L(n).endsWith("a"));
+  derive("Name a country with more than one word in its name", COUNTRIES, n => words(n) > 1);
+  derive("Name a capital city that starts with B", ["Name a capital city"], n => L(n).startsWith("b"));
+  derive("Name a capital city with four letters or fewer", ["Name a capital city"], n => L(n).length <= 4);
+  derive("Name a US state that ends in a vowel", ["Name a US state"], n => /[aeiou]$/.test(L(n)));
+  derive("Name a US state with two words in its name", ["Name a US state"], n => words(n) === 2);
+  derive("Name an animal that starts with K", ANIMALS, n => L(n).startsWith("k"));
+  derive("Name an animal with a three-letter name", ANIMALS, n => words(n) === 1 && L(n).length === 3);
+  derive("Name a fruit or vegetable that starts with P", ["Name a fruit","Name a vegetable"], n => L(n).startsWith("p"));
+  derive("Name a fruit with a five-letter name", ["Name a fruit"], n => words(n) === 1 && L(n).length === 5);
+  derive("Name a dog breed with 'terrier' in its name", ["Name a dog breed"], n => norm(n).includes("terrier"), {aliases: true});
+  derive("Name a language that ends in -ish", ["Name a language"], n => L(n).endsWith("ish"));
+  derive("Name a language that ends in -ese", ["Name a language"], n => L(n).endsWith("ese"));
+  derive("Name an element that doesn't end in -ium", ["Name an element on the periodic table"], n => !L(n).endsWith("ium"));
+  derive("Name a body part with a three-letter name", ["Name a part of the human body"], n => words(n) === 1 && L(n).length === 3);
+  derive("Name a color with four letters or fewer", ["Name a color"], n => words(n) === 1 && L(n).length <= 4);
+  derive("Name an insect with a two-word name", ["Name an insect"], n => words(n) === 2);
+  derive("Name a dessert that starts with C", ["Name a dessert"], n => L(n).startsWith("c"));
+  derive("Name a musical instrument that starts with T", ["Name a musical instrument"], n => L(n).startsWith("t"));
+  derive("Name a programming language that starts with P", ["Name a programming language"], n => L(n).startsWith("p"));
+  const COLOR_WORD = /\b(red|blue|green|yellow|black|white|gold|golden|silver|grey|gray|brown|pink|purple|orange|scarlet|crimson|rose|ruby|azure|indigo|violet|olive)/;
+  derive("Name a country that starts and ends with the same letter", COUNTRIES, n => { const s = L(n); return s.length > 2 && s[0] === s[s.length-1]; });
+  derive("Name a country with 'land' in its name", COUNTRIES, n => norm(n).includes("land"), {aliases: true});
+  derive("Name a US state that starts with M or N", ["Name a US state"], n => /^[mn]/.test(L(n)));
+  derive("Name an animal that starts and ends with the same letter", ANIMALS, n => { const s = L(n); return s.length > 2 && s[0] === s[s.length-1]; });
+  derive("Name an animal with a two-word name", ANIMALS, n => words(n) === 2);
+  derive("Name an animal with 'fish' in its name", ANIMALS, n => norm(n).includes("fish") && L(n) !== "fish", {aliases: true});
+  derive("Name a bird with a color in its name", ["Name a bird"], n => COLOR_WORD.test(norm(n)), {aliases: true});
+  derive("Name a fruit with 'berry' in its name", ["Name a fruit"], n => norm(n).includes("berry"), {aliases: true});
+  derive("Name a dessert with 'cake' in its name", ["Name a dessert"], n => norm(n).includes("cake"), {aliases: true});
+  derive("Name a capital city with more than one word in its name", ["Name a capital city"], n => words(n) > 1);
+  derive("Name a dog breed named after a place", ["Name a dog breed"], n => /\b(german|english|french|irish|scottish|welsh|american|australian|siberian|alaskan|tibetan|chinese|japanese|portuguese|italian|spanish|swiss|bernese|norwegian|swedish|finnish|russian|belgian|dutch|hungarian|czech|polish|croatian|dalmatian|maltese|pomeranian|yorkshire|boston|labrador|newfoundland|chihuahua|rhodesian|afghan|pyrenees|havanese|bolognese|pekingese|shetland|cardigan|pembroke|great dane|weimaraner|leonberger|rottweiler|brussels|ibizan|pharaoh|saint|st|thai|mexican|peruvian|argentin|brazilian|canaan|anatolian|caucasian|central asian|kerry|airedale|bedlington|border|cairn|dandie|glen|lakeland|manchester|norfolk|norwich|skye|sealyham|staffordshire|west highland|cesky|kai|shiba|akita|tosa|hokkaido)/.test(norm(n)), {aliases: true});
+  derive("Name an element named after a place or something in space", ["Name an element on the periodic table"], n => /^(americium|berkelium|californium|copernicium|darmstadtium|dubnium|europium|francium|gallium|germanium|hafnium|holmium|livermorium|lutetium|magnesium|manganese|moscovium|neptunium|nihonium|plutonium|polonium|rhenium|ruthenium|scandium|strontium|tennessine|thulium|ytterbium|yttrium|erbium|terbium|copper|uranium|cerium|palladium|selenium|tellurium|helium|mercury)$/.test(L(n)));
+
+  /* ---- Constraint templates: letter, length and word-count rules applied across every big category ---- */
+  const TEMPLATE_BASES = [
+    ["a country", COUNTRIES], ["a US state", ["Name a US state"]], ["a capital city", ["Name a capital city"]],
+    ["an animal", ANIMALS], ["a mammal", ["_mammals"]], ["a bird", ["Name a bird"]], ["a fish", ["Name a fish"]], ["an insect", ["Name an insect"]],
+    ["a fruit or vegetable", ["Name a fruit","Name a vegetable"]], ["a chemical element", ["Name an element on the periodic table"]],
+    ["a color", ["Name a color"]], ["a language", ["Name a language"]], ["a dog breed", ["Name a dog breed"]], ["a breed of cat", ["Name a breed of cat"]],
+    ["a musical instrument", ["Name a musical instrument"]], ["a river", ["Name a river"]], ["a mountain", ["Name a mountain"]], ["an island", ["Name an island"]],
+    ["a lake", ["Name a lake"]], ["a currency", ["Name a currency"]], ["a cocktail", ["Name a cocktail"]], ["a type of cheese", ["Name a type of cheese"]],
+    ["a dessert", ["Name a dessert"]], ["a mythical creature", ["Name a mythical creature"]], ["a board game", ["Name a board game"]],
+    ["a sport", ["Name a sport","Name a sport played with a ball"]], ["a music genre", ["Name a music genre"]], ["a breed of horse", ["Name a breed of horse"]],
+    ["a constellation", ["Name a constellation"]], ["a spice or herb", ["Name a spice or herb"]], ["a type of fabric", ["Name a type of fabric"]],
+    ["a piece of furniture", ["Name a piece of furniture"]], ["a type of bread", ["Name a type of bread"]], ["a soup", ["Name a soup"]],
+    ["a card game", ["Name a card game"]], ["a martial art", ["Name a martial art"]], ["a god or goddess", ["Name a god or goddess"]],
+    ["a profession", ["Name a profession"]], ["a part of the body", ["Name a part of the human body"]], ["a flower", ["Name a flower"]],
+    ["a type of tree", ["Name a type of tree"]], ["a type of dance", ["Name a type of dance"]], ["a type of hat", ["Name a type of hat"]],
+    ["a programming language", ["Name a programming language"]], ["a famous landmark", ["Name a famous landmark"]], ["a sea or ocean", ["Name a sea or ocean"]],
+    ["a type of pasta", ["Name a type of pasta"]], ["a vehicle", ["Name a vehicle"]], ["a type of shoe", ["Name a type of shoe"]], ["a desert", ["Name a desert"]]
+  ];
+  const usedQ = new Set(PROMPTS.map(p => p.q));
+  function buildBase(src){
+    const keyName = new Map(), baseTier = new Map(), order = [];
+    for (const sq of src){
+      const sp = byQ(sq); if (!sp || sp.map.size === 0) continue;
+      for (const [k, v] of sp.map){
+        if (keyName.has(k)) continue;
+        keyName.set(k, v.name);
+        if (!baseTier.has(v.name)){ baseTier.set(v.name, v.t); order.push(v.name); }
+      }
+    }
+    const info = new Map(order.map(n => [n, {l: L(n), w: words(n)}]));
+    return {keyName, baseTier, order, info};
+  }
+  function fromBase(q, B, test){
+    if (usedQ.has(q)) return;
+    const pass = B.order.filter(n => test(B.info.get(n)));
+    const max = Math.max(25, B.order.length * 0.5);
+    if (pass.length < 12 || pass.length > max) return;
+    const sorted = pass.map((n,i) => [n,i]).sort((a,b) => rank[B.baseTier.get(a[0])] - rank[B.baseTier.get(b[0])] || a[1]-b[1]).map(a => a[0]);
+    const tierOf = new Map(), canon = {c:[], u:[], r:[], x:[]};
+    sorted.forEach((n,i) => { const f = i / sorted.length, t = f < 0.12 ? "c" : f < 0.35 ? "u" : f < 0.65 ? "r" : "x"; tierOf.set(n, t); canon[t].push(n); });
+    const map = new Map();
+    for (const [k, n] of B.keyName){ const t = tierOf.get(n); if (t) map.set(k, {t, name: n}); }
+    usedQ.add(q);
+    PROMPTS.push({q, map, canon, kind: "template"});
+  }
+  const up = s => s.toUpperCase();
+  for (const [noun, src] of TEMPLATE_BASES){
+    const B = buildBase(src);
+    if (B.order.length < 25) continue;
+    for (const ch of "bcdfghjkmnpvwyz") fromBase(`Name ${noun} with the letter ${up(ch)} in its name`, B, i => i.l.includes(ch));
+    for (const ch of "abcdeghiklmnoprstw") fromBase(`Name ${noun} that starts with ${up(ch)}`, B, i => i.l.startsWith(ch));
+    for (const ch of "aeinorsy") fromBase(`Name ${noun} that ends in ${up(ch)}`, B, i => i.l.endsWith(ch));
+    for (const n of [4,5,6,7]) fromBase(`Name ${noun} whose name has ${n} or fewer letters`, B, i => i.l.length <= n);
+    fromBase(`Name ${noun} whose name has 10 or more letters`, B, i => i.l.length >= 10);
+    fromBase(`Name ${noun} with more than one word in its name`, B, i => i.w > 1);
+    fromBase(`Name ${noun} with a one-word name that has no letter E`, B, i => i.w === 1 && !i.l.includes("e"));
+    fromBase(`Name ${noun} with a double letter in its name`, B, i => /(.)\1/.test(i.l));
+  }
+}
+
+/* Themed packs: free rounds drawn from one family of prompts. */
+const PACKS = [
+  {id:"food", name:"Food & drink", qs:["Name a fruit","Name a vegetable","Name a type of cheese","Name a type of pasta","Name a breakfast food","Name a dessert","Name a fast food chain","Name something you'd find in a kitchen","Name a cocktail","Name a type of bread","Name a soup","Name a spice or herb","Name a vegetable that grows underground"]},
+  {id:"nature", name:"Wild things", qs:["Name an animal that lives in the ocean","Name a dog breed","Name a bird","Name a type of tree","Name a flower","Name an insect","Name a breed of cat","Name a fish","Name a type of weather","Name a dinosaur or prehistoric reptile","Name a breed of horse","Name a job that involves working with animals"]},
+  {id:"world", name:"Around the world", qs:["Name a country in Europe","Name a US state","Name a capital city","Name a country in Asia","Name a country in Africa","Name a sea or ocean","Name a famous landmark","Name a language","Name a river","Name a mountain","Name an island","Name a lake","Name a desert","Name a volcano","Name a currency","Name a famous bridge","Name an explorer"]},
+  {id:"science", name:"Lab & launchpad", qs:["Name a planet, moon or dwarf planet in our solar system","Name an element on the periodic table","Name a part of the human body","Name a gemstone","Name a programming language","Name a famous scientist","Name a dinosaur or prehistoric reptile","Name a type of weather","Name a constellation","Name an inventor","Name a bone in the human body","Name an organ in the human body"]},
+  {id:"culture", name:"Arts & play", qs:["Name a sport played with a ball","Name a musical instrument","Name a board game","Name a famous painter","Name a mythical creature","Name a superpower","Name a color","Name a word that rhymes with cat","Name a profession","Name a novelist","Name a poet","Name a composer","Name a music genre","Name a famous novel","Name a famous painting","Name a famous film","Name a video game","Name a band","Name a card game","Name a god or goddess","Name a magical object from myth or fiction"]},
+  {id:"sport", name:"Game on", qs:["Name a sport","Name a sport played with a ball","Name a sport played on ice","Name a sport played in or on water","Name a sport that uses a racket or bat","Name a martial art","Name a board game","Name a card game","Name a video game"]},
+  {id:"stuff", name:"Everyday stuff", qs:["Name a vehicle","Name something with wheels","Name something that's yellow","Name something you'd find in a kitchen","Name a color","Name a profession","Name a breakfast food","Name a type of shoe","Name a piece of furniture","Name a type of fabric","Name a typeface","Name a type of knife","Name something you'd find in a toolbox"]}
+  ,{id:"twists", name:"Brain benders", qs: PROMPTS.filter(p => p.kind === "twist").map(p => p.q)}
+  ,{id:"letters", name:"Letter games", qs: PROMPTS.filter(p => p.kind === "template").map(p => p.q)}
+].map(pk => ({...pk, idx: pk.qs.map(q => PROMPTS.findIndex(p => p.q === q)).filter(i => i >= 0 && PROMPTS[i].kind !== "hidden")}));
+
+function lev(a,b){
+  const m=a.length,n=b.length; let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; }
+  return prev[n];
+}
+function lookup(p, input){
+  const n = norm(input); if (!n) return null;
+  const vs = new Set([n, n.replace(/ /g,"")]);
+  for (const w of [" tree"," cheese"," pasta"," noodles"," breed"," dog"," sea"," ocean"," flower"," state"," city"]) if (n.endsWith(w)) vs.add(n.slice(0,-w.length));
+  for (const v of [...vs]) {
+    if (v.endsWith("ies")) vs.add(v.slice(0,-3)+"y");
+    if (v.endsWith("es")) vs.add(v.slice(0,-2));
+    if (v.endsWith("s")) vs.add(v.slice(0,-1));
+    vs.add(v+"s");
+  }
+  for (const v of vs) if (p.map.has(v)) return p.map.get(v);
+  if (n.length >= 5) {
+    const max = n.length >= 9 ? 2 : 1; let best = null;
+    for (const [k,val] of p.map) {
+      if (Math.abs(k.length - n.length) > max) continue;
+      const d = lev(n,k); if (d <= max && (!best || d < best.d)) best = {d,val};
+    }
+    if (best) return best.val;
+  }
+  return null;
+}
+
+/* ---------------- Days, seeding, storage ---------------- */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffled(n, rng){ const a=[...Array(n).keys()]; for(let i=n-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function todayNum(){ const d=new Date(); d.setHours(0,0,0,0); return Math.round((d-EPOCH)/864e5)+1; }
+function dateOf(n){ const d=new Date(EPOCH); d.setDate(d.getDate()+n-1); return d; }
+// cyrb53-style string hash (well mixed, so daily picks don't cluster).
+function hashStr(s){
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h1 ^ h2) >>> 0;
+}
+// Each prompt gets a per-day rank from its own text, so adding categories later barely changes past or future days.
+// A round is 3 constraint templates, 2 twists and 2 classics, interleaved.
+// Templates never share a base category within a round, so you won't get three "...a country..." prompts at once.
+function baseOf(q){ return q.replace(/ (with the letter \w|that starts with \w|that ends in \w|whose name has .*|with more than one word.*|with a one-word name.*|with a double letter.*)$/, ""); }
+function mixRound(tw, cl, tp){
+  const picked = [], seen = new Set();
+  for (const i of tp){ const b = baseOf(PROMPTS[i].q); if (seen.has(b)) continue; seen.add(b); picked.push(i); if (picked.length === 3) break; }
+  for (const i of tp){ if (picked.length === 3) break; if (!picked.includes(i)) picked.push(i); }
+  return [picked[0], cl[0], tw[0], picked[1], cl[1], tw[1], picked[2]];
+}
+function kindIdx(kind){ return PROMPTS.map((p,i) => [p,i]).filter(([p]) => p.kind === kind).map(([,i]) => i); }
+// Daily picks work like a shuffled deck per kind: every prompt is dealt once before any prompt repeats.
+const deckCache = new Map();
+function deck(kind, cycle){
+  const key = kind + "#" + cycle;
+  if (!deckCache.has(key)) deckCache.set(key, kindIdx(kind).map(i => [hashStr(PROMPTS[i].q + "#deck" + cycle), i]).sort((a,b) => a[0]-b[0]).map(x => x[1]));
+  return deckCache.get(key);
+}
+function deal(kind, n, per){
+  const size = kindIdx(kind).length, out = [];
+  for (let pos = (n - 1) * per; out.length < per && pos < (n - 1) * per + per * 3; pos++){
+    const i = deck(kind, Math.floor(pos / size))[pos % size];
+    if (!out.includes(i)) out.push(i);
+  }
+  return out;
+}
+function promptsFor(n){ return mixRound(deal("twist", n, 2), deal("classic", n, 2), deal("template", n, 4)); }
+const STORE_KEY = "outlier:v1";
+function loadStore(){ try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {days:{}}; } catch { return {days:{}}; } }
+let store = loadStore();
+function saveStore(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch {} }
+function stats(){
+  const days = store.days, done = Object.keys(days).filter(k => days[k].done).map(Number);
+  const best = done.reduce((m,k)=>Math.max(m,total(days[k].answers)),0);
+  let streak = 0, t = todayNum(); if (!days[t]?.done) t--;
+  while (days[t]?.done) { streak++; t--; }
+  return {played:done.length, streak, best};
+}
+function total(ans){ return ans.reduce((s,a)=>s+a.pts,0); }
+
+/* ---------------- Shared player data (each player writes plays/<their id>; everyone reads) ---------------- */
+const MIN_DATA = 15;
+let counts = {}, playersToday = 0, sharedReady = false, db = null, uid = null, myDoc = null, writeChain = Promise.resolve();
+function rebuild(docs){
+  counts = {}; playersToday = 0; const t = String(todayNum());
+  const add = arr => (Array.isArray(arr) ? arr : []).forEach(e => {
+    if (!Array.isArray(e) || typeof e[0] !== "string" || typeof e[1] !== "string") return;
+    const c = counts[e[0]] || (counts[e[0]] = {total:0, by:{}}); c.total++; c.by[e[1]] = (c.by[e[1]] || 0) + 1;
+  });
+  for (const d of docs){
+    const body = d.data() || {}, days = body.days && typeof body.days === "object" ? body.days : {};
+    for (const k in days) add(days[k]);
+    if (Array.isArray(days[t]) && days[t].length) playersToday++;
+    add(body.free);
+  }
+  sharedReady = true; updateLive();
+}
+function dataTier(q, name){
+  const c = counts[q]; if (!c || c.total < MIN_DATA) return null;
+  const n = c.by[name] || 0, share = n / c.total;
+  return {t: share >= .12 ? "c" : share >= .05 ? "u" : share >= .015 ? "r" : "x", share, n, total: c.total};
+}
+function topPicks(p){
+  const c = counts[p.q];
+  if (c && c.total >= MIN_DATA) return {names: Object.entries(c.by).sort((a,b) => b[1]-a[1]).slice(0,4).map(e => e[0]), src: "players"};
+  return {names: p.canon.c.slice(0,4), src: "list"};
+}
+function record(day, q, name){
+  if (!db || !uid || !myDoc) return;
+  if (day != null) (myDoc.days[String(day)] ||= []).push([q, name]);
+  else { myDoc.free.push([q, name]); if (myDoc.free.length > 300) myDoc.free.splice(0, myDoc.free.length - 300); }
+  const body = JSON.parse(JSON.stringify(myDoc));
+  writeChain = writeChain.then(() => db.doc("plays/" + uid).set(body)).catch(() => {});
+}
+function updateLive(){
+  const el = document.getElementById("live"); if (!el || !sharedReady) return;
+  el.textContent = playersToday ? `${playersToday} ${playersToday === 1 ? "player has" : "players have"} launched today.` : "Nobody has launched today yet. You could be first.";
+  el.hidden = false;
+}
+let sharedTries = 0;
+async function initShared(){
+  if (!window.claude || typeof window.claude.use !== "function"){ if (sharedTries++ < 3) setTimeout(initShared, 1500); return; }
+  try {
+    db = await window.claude.use("db"); if (!db) return;
+    const user = await window.claude.use("user");
+    uid = user ? await user.id() : null;
+    db.collection("plays").limit(1000).onSnapshot(s => rebuild(s.docs), () => {});
+    if (uid){
+      const d = await db.doc("plays/" + uid).get(), b = d.exists ? d.data() : null;
+      myDoc = {days: b && b.days && typeof b.days === "object" ? JSON.parse(JSON.stringify(b.days)) : {}, free: b && Array.isArray(b.free) ? b.free.slice() : []};
+    }
+  } catch {}
+}
+
+/* ---------------- Altitude helpers ---------------- */
+function kmAt(s){
+  s = Math.max(0, Math.min(MAXS, s));
+  for (let i=1;i<MILES.length;i++){ const a=MILES[i-1], b=MILES[i];
+    if (s <= b.s){ const t=(s-a.s)/(b.s-a.s); return a.km===0 ? b.km*t : a.km*Math.pow(b.km/a.km,t); } }
+  return MILES[MILES.length-1].km;
+}
+function fmtKm(km){ return km < 10 ? km.toFixed(1)+" km" : Math.round(km).toLocaleString("en-US")+" km"; }
+function reached(s){ let m = MILES[0]; for (const x of MILES) if (s >= x.s) m = x; return m; }
+function zone(km){
+  if (km < 12) return "Troposphere"; if (km < 50) return "Stratosphere"; if (km < 85) return "Mesosphere";
+  if (km < 100) return "Thermosphere"; if (km < 2000) return "Low Earth orbit"; if (km < 35786) return "Medium Earth orbit";
+  if (km < 384400) return "High orbit"; return "Lunar surface";
+}
+
+/* ---------------- Game state + screens ---------------- */
+const panel = document.getElementById("panel");
+const altEl = document.getElementById("alt"), scoreEl = document.getElementById("score");
+let run = null;            // {mode, day, prompts, answers, i, timerEnd, locked}
+let target = 0, cam = 0;   // score-space altitude
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const REDUCE_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let shakeUntil = 0;
+// Count a number up with an ease-out curve; fmt turns the value into text.
+function countUp(el, to, fmt, ms){
+  if (!el) return;
+  if (REDUCE_MOTION || !to){ el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  const step = now => { const t = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - t, 3);
+    el.textContent = fmt(to * e); if (t < 1 && el.isConnected) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+// Every new screen staggers its blocks in.
+new MutationObserver(() => {
+  const s = panel.firstElementChild; if (!s) return;
+  s.classList.add("screen");
+  [...s.children].forEach((c,i) => c.style.setProperty("--i", i));
+  panel.scrollTop = 0;
+}).observe(panel, {childList: true});
+
+function home(){
+  run = null; target = 0;
+  const n = todayNum(), d = store.days[n], st = stats();
+  const past = []; for (let k = n-1; k >= 1 && past.length < 30; k--) past.push(k);
+  const todayBtn = d?.done
+    ? `<button class="wide" id="b-today">See launch #${n} results · ${total(d.answers)} pts</button>`
+    : `<button class="primary wide" id="b-today">${d?.answers?.length ? "Resume" : "Begin"} launch #${n}</button>`;
+  panel.innerHTML = `
+  <div class="stack">
+    <div>
+      <div class="eyebrow">Daily launch · ${dateOf(n).toLocaleDateString(undefined,{month:"long",day:"numeric"})}</div>
+      <h1 style="margin-top:8px">OUTLIER</h1>
+      <p class="lede">Seven prompts. ${SECONDS} seconds each. Name something correct that few people would think of. Obvious answers barely leave the pad; rare ones take you toward the Moon.</p>
+    </div>
+    ${todayBtn}
+    <button class="wide" id="b-free">Free flight · unlimited rounds</button>
+    <div>
+      <div class="eyebrow" style="color:var(--muted)">Themed packs · free, unlimited</div>
+      <div class="packs">${PACKS.map(pk => `<button data-pack="${pk.id}"><b>${esc(pk.name)}</b><small>${pk.idx.length} prompts</small></button>`).join("")}</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${st.played}</b><span>Launches</span></div>
+      <div class="stat"><b>${st.streak}</b><span>Day streak</span></div>
+      <div class="stat"><b>${st.best}</b><span>Best score</span></div>
+    </div>
+    <p class="note" id="live" hidden></p>
+    <details open>
+      <summary>How to play</summary>
+      <ul class="rules">
+        <li>Each prompt asks for one thing in a category. Type it and press Enter.</li>
+        <li>You have ${SECONDS} seconds per prompt.</li>
+        <li>Scoring by rarity: Common +1, Uncommon +4, Rare +7, Long shot +10.</li>
+        <li>If an answer isn't in the flight list, try again. The clock keeps running. Small typos are forgiven.</li>
+        <li>Thousands of extra answers come from <a href="https://www.wikidata.org" target="_blank" rel="noopener" style="color:var(--flame-2)">Wikidata</a> open data.</li>
+        <li>Once enough people have answered a prompt, rarity comes from what real players said.</li>
+        <li>Everyone gets the same daily prompts. A perfect ${MAXS} lands you on the Moon.</li>
+      </ul>
+    </details>
+    ${past.length ? `<details>
+      <summary>Past launches</summary>
+      <div class="archive">${past.map(k => { const pd = store.days[k];
+        return `<button data-day="${k}" class="${pd?.done?"done":""}">#${k}${pd?.done?`<small>${total(pd.answers)} pts</small>`:""}</button>`; }).join("")}</div>
+    </details>` : ""}
+  </div>`;
+  document.getElementById("b-today").onclick = () => startDaily(n);
+  document.getElementById("b-free").onclick = () => startFree(null);
+  panel.querySelectorAll("[data-pack]").forEach(b => b.onclick = () => startFree(b.dataset.pack));
+  panel.querySelectorAll("[data-day]").forEach(b => b.onclick = () => startDaily(+b.dataset.day));
+  updateLive();
+}
+
+function startDaily(n){
+  if (!store.days[n]) store.days[n] = {answers:[], done:false};
+  const d = store.days[n];
+  run = {mode:"daily", day:n, prompts:promptsFor(n), answers:d.answers, i:d.answers.length};
+  target = total(run.answers);
+  if (d.done || run.i >= ROUNDS) return result();
+  ask();
+}
+function startFree(packId){
+  const rng = mulberry32((Math.random()*2**32)>>>0);
+  const pack = PACKS.find(pk => pk.id === packId) || null;
+  const pick = pool => shuffled(pool.length, rng).map(k => pool[k]);
+  const prompts = pack ? pick(pack.idx).slice(0, ROUNDS) : mixRound(pick(kindIdx("twist")), pick(kindIdx("classic")), pick(kindIdx("template")));
+  run = {mode:"free", pack: pack ? pack.id : null, day:null, prompts, answers:[], i:0};
+  target = 0; cam = Math.min(cam, 0.001); ask();
+}
+function modeLabel(){
+  if (run.mode === "daily") return "Launch #" + run.day;
+  const pk = PACKS.find(p => p.id === run.pack);
+  return pk ? esc(pk.name) + " pack" : "Free flight";
+}
+
+function ask(){
+  const p = PROMPTS[run.prompts[run.i]];
+  run.locked = false; run.timerEnd = performance.now() + SECONDS*1000;
+  panel.innerHTML = `
+  <div class="stack">
+    <div class="eyebrow">${modeLabel()} · Prompt ${run.i+1} of ${ROUNDS}</div>
+    <p class="prompt">${esc(p.q)}</p>
+    <div>
+      <div class="timer" id="timer"><i id="tbar"></i></div>
+      <div class="tline" style="margin-top:6px"><span>Rarer answers fly higher</span><span id="tleft">${SECONDS}s</span></div>
+    </div>
+    <form class="answer" id="f" autocomplete="off">
+      <input id="ans" type="text" placeholder="Type one answer" aria-label="Your answer" maxlength="60" autocapitalize="off" spellcheck="false">
+      <button class="primary" type="submit">Fire</button>
+    </form>
+    <p class="note tries" id="tries" hidden></p>
+  </div>`;
+  run.misses = [];
+  const f = document.getElementById("f"), inp = document.getElementById("ans");
+  inp.focus();
+  f.onsubmit = e => { e.preventDefault();
+    if (!inp.value.trim()) { f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); return; }
+    submit(inp.value, false); };
+}
+
+function submit(input, timedOut){
+  if (!run || run.locked) return;
+  const p = PROMPTS[run.prompts[run.i]];
+  const hit = timedOut ? null : lookup(p, input);
+  if (!timedOut && !hit){
+    // Not in the flight list: let them try again while the clock keeps running.
+    const tried = input.trim(); run.misses.push(tried);
+    const tries = document.getElementById("tries"), f = document.getElementById("f"), inp = document.getElementById("ans");
+    if (tries){
+      tries.innerHTML = `<b>${esc(tried)}</b> isn't in the flight list. Try another answer before the clock runs out.`
+        + (run.misses.length > 1 ? `<br><span class="tried">Tried: ${run.misses.map(esc).join(", ")}</span>` : "");
+      tries.hidden = false; tries.classList.remove("pop"); void tries.offsetWidth; tries.classList.add("pop");
+    }
+    if (f){ f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); }
+    if (inp){ inp.value = ""; inp.focus(); }
+    return;
+  }
+  run.locked = true;
+  const misses = run.misses || [];
+  const dt = hit ? dataTier(p.q, hit.name) : null;
+  const tier = hit ? (dt ? dt.t : hit.t) : "time";
+  const a = {q: p.q, input: timedOut ? "" : input.trim(), tier, name: hit ? hit.name : "", pts: TIERS[tier].pts, src: dt ? "players" : "list"};
+  run.answers.push(a); run.i++;
+  target += a.pts;
+  if (a.pts) floaters.push({text:"+"+a.pts, tier, born:performance.now()});
+  if (tier === "x") shakeUntil = performance.now() + 450;
+  if (run.mode === "daily") { store.days[run.day].done = run.i >= ROUNDS; saveStore(); }
+  if (hit) record(run.mode === "daily" ? run.day : null, p.q, hit.name);
+  const picks = topPicks(p);
+  const ls = p.canon.x[Math.floor(Math.random()*p.canon.x.length)];
+  const last = run.i >= ROUNDS;
+  const head = hit ? `Counted as <b>${esc(hit.name)}</b>.`
+    : misses.length ? `Out of time after ${misses.length} ${misses.length === 1 ? "miss" : "misses"}.` : "Engine stalled, no answer in time.";
+  const why = !hit ? "" : dt
+    ? `<p class="note">${Math.round(dt.share*100)}% of ${dt.total} player answers to this prompt matched yours.</p>`
+    : db ? `<p class="note">Rated from the curated list. Player data takes over once this prompt has ${MIN_DATA} answers.</p>` : "";
+  panel.innerHTML = `
+  <div class="stack">
+    <div class="eyebrow">${modeLabel()} · Prompt ${run.i} of ${ROUNDS}</div>
+    <p class="prompt" style="font-size:22px">${esc(p.q)}</p>
+    <div class="fb fb-${tier}">
+      <div class="fbtop"><span class="chip ${tier}">${TIERS[tier].name}</span><span class="pts ${tier}" data-count="${a.pts}">+0</span></div>
+      <p class="note">${head}</p>
+      ${why}
+      <p class="note">${picks.src === "players" ? "Players' top picks" : "Most common picks"}: <b>${esc(picks.names.join(", "))}</b></p>
+      ${ls ? `<p class="note">A long shot you could have tried: <b>${esc(ls)}</b></p>` : ""}
+    </div>
+    <button class="primary wide" id="next">${last ? "See where you landed" : "Next prompt"}</button>
+  </div>`;
+  const nx = document.getElementById("next");
+  countUp(panel.querySelector("[data-count]"), a.pts, v => "+" + Math.round(v), 520);
+  setTimeout(() => nx.focus(), 60);
+  nx.onclick = () => last ? result() : ask();
+}
+
+function shareText(){
+  const s = total(run.answers), m = reached(s);
+  const pk = PACKS.find(p => p.id === run.pack);
+  const label = run.mode === "daily" ? `OUTLIER #${run.day}` : pk ? `OUTLIER · ${pk.name} pack` : "OUTLIER free flight";
+  return `${label} · ${s}/${MAXS}\n🚀 ${fmtKm(kmAt(s))}, ${m.label}\n${run.answers.map(a => TIERS[a.tier].sq).join("")}`;
+}
+
+function result(){
+  const s = total(run.answers), km = kmAt(s), m = reached(s);
+  target = s;
+  panel.innerHTML = `
+  <div class="stack">
+    <div class="eyebrow">${modeLabel()} complete</div>
+    <div>
+      <div class="result-alt" id="ralt">${fmtKm(0)}</div>
+      <p class="lede" style="margin-top:6px">${zone(km)} · highest marker passed: <b style="color:var(--ink)">${esc(m.label)}</b></p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${s}</b><span>of ${MAXS} points</span></div>
+      <div class="stat"><b>${run.answers.filter(a=>a.tier==="x").length}</b><span>Long shots</span></div>
+      <div class="stat"><b>${run.answers.filter(a=>a.pts===0).length}</b><span>Misses</span></div>
+    </div>
+    <div class="log">${run.answers.map((a,i) => `<div style="--j:${i}">
+      <span>${esc(a.q || PROMPTS[run.prompts[i]].q)}</span>
+      <strong class="${a.tier}">+${a.pts}</strong>
+      <em>${a.tier==="time" ? "No answer" : esc(a.name || a.input)} · <span class="${a.tier}">${TIERS[a.tier].name}</span></em>
+    </div>`).join("")}</div>
+    <textarea class="share" id="share" readonly aria-label="Share text">${esc(shareText())}</textarea>
+    <div class="row">
+      <button class="primary" id="copy">Copy result</button>
+      <button id="again">${run.pack ? "Play this pack again" : "Free flight"}</button>
+      <button id="home">Home</button>
+    </div>
+    <div class="legend"><span class="c">Common +1</span><span class="u">Uncommon +4</span><span class="r">Rare +7</span><span class="x">Long shot +10</span></div>
+  </div>`;
+  countUp(document.getElementById("ralt"), s, v => fmtKm(kmAt(v)), 1400);
+  const copy = document.getElementById("copy"), ta = document.getElementById("share");
+  copy.onclick = () => {
+    const done = () => { copy.textContent = "Copied"; setTimeout(() => copy.textContent = "Copy result", 1600); };
+    try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); copy.textContent = "Press Ctrl+C to copy"; }); }
+    catch { ta.select(); copy.textContent = "Press Ctrl+C to copy"; }
+  };
+  const againPack = run.pack;
+  document.getElementById("again").onclick = () => startFree(againPack);
+  document.getElementById("home").onclick = home;
+}
+
+/* ---------------- Sky renderer ---------------- */
+const cv = document.getElementById("sky"), ctx = cv.getContext("2d");
+let W=0, H=0, DPR=1;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rnd = mulberry32(42);
+const stars = Array.from({length:180}, () => ({x:rnd(), y:rnd(), r:rnd()*1.3+.3, p:rnd()*6.28}));
+const clouds = Array.from({length:16}, () => ({s:1+rnd()*9, x:rnd(), w:60+rnd()*120, v:(rnd()-.5)*.004}));
+const particles = [], floaters = [];
+function resize(){ DPR = Math.min(2, devicePixelRatio||1); W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener("resize", resize); resize();
+
+const SKY = [[0,[150,208,244]],[7,[74,144,217]],[14,[34,67,127]],[21,[18,28,69]],[28,[8,11,34]],[70,[3,4,12]]];
+function skyAt(s){
+  s = Math.max(0, s);
+  for (let i=1;i<SKY.length;i++){ const [s0,c0]=SKY[i-1],[s1,c1]=SKY[i];
+    if (s <= s1){ const t=(s-s0)/(s1-s0); return c0.map((v,j)=>Math.round(v+(c1[j]-v)*t)); } }
+  return SKY[SKY.length-1][1];
+}
+const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+function layout(){
+  const narrow = W <= 760;
+  return narrow ? {rx: W/2, ry: Math.max(130, H*0.27), ppp: H/12} : {rx: Math.max(160,(W-470)/2), ry: H*0.62, ppp: H/13};
+}
+
+let lastT = performance.now();
+function frame(now){
+  const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+  // timer
+  if (run && run.timerEnd && !run.locked){
+    const left = Math.max(0, run.timerEnd - now), bar = document.getElementById("tbar"), tl = document.getElementById("tleft");
+    if (bar){ bar.style.transform = `scaleX(${left/(SECONDS*1000)})`; bar.parentNode.classList.toggle("low", left < 5000); }
+    if (tl) tl.textContent = Math.ceil(left/1000)+"s";
+    if (left <= 0) submit(document.getElementById("ans")?.value || "", true);
+  }
+  // camera
+  const prev = cam;
+  cam = reduce ? target : cam + (target - cam) * Math.min(1, dt*1.6);
+  if (Math.abs(target-cam) < 0.002) cam = target;
+  const thrust = (cam - prev) > 0.0005 || target - cam > 0.02;
+  const {rx, ry, ppp} = layout();
+  const yOf = s => ry + 34 - (s - cam)*ppp;
+  const sTop = cam + (ry+34)/ppp, sBot = cam - (H-ry-34)/ppp;
+
+  // a quick camera shake when a long shot fires
+  ctx.save();
+  if (!reduce && now < shakeUntil){ const k = (shakeUntil - now) / 450 * 5; ctx.translate((Math.random()-.5)*k, (Math.random()-.5)*k); }
+  // sky
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0, rgb(skyAt(sTop))); g.addColorStop(1, rgb(skyAt(sBot)));
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // stars
+  const sa = Math.max(0, Math.min(1, (cam - 10)/14));
+  if (sa > 0){
+    for (const st of stars){
+      const y = ((st.y*H + cam*ppp*0.06) % H + H) % H;
+      ctx.globalAlpha = sa * (0.55 + 0.45*Math.sin(now/900 + st.p));
+      ctx.fillStyle = "#fff"; ctx.fillRect(st.x*W, y, st.r, st.r);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // clouds
+  for (const c of clouds){
+    c.x = (c.x + c.v*dt + 1.2) % 1.2;
+    const y = yOf(c.s); if (y < -60 || y > H+60) continue;
+    const x = c.x*W*1.2 - W*0.1;
+    ctx.fillStyle = "rgba(255,255,255,.55)";
+    ctx.beginPath(); ctx.ellipse(x, y, c.w/2, c.w/7, 0, 0, 6.283);
+    ctx.ellipse(x - c.w*0.18, y - c.w*0.06, c.w/4, c.w/8, 0, 0, 6.283);
+    ctx.ellipse(x + c.w*0.15, y - c.w*0.05, c.w/5, c.w/9, 0, 0, 6.283); ctx.fill();
+  }
+
+  // milestone markers
+  ctx.font = "600 12px 'Chakra Petch', 'Segoe UI', sans-serif"; ctx.textBaseline = "bottom";
+  for (const m of MILES){
+    if (m.s === 0) continue;
+    const y = yOf(m.s); if (y < 40 || y > H+10) continue;
+    const dark = m.s < 9;
+    ctx.strokeStyle = dark ? "rgba(10,30,70,.35)" : "rgba(220,230,255,.22)";
+    ctx.setLineDash([4,6]); ctx.beginPath(); ctx.moveTo(16,y); ctx.lineTo(W-16,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = dark ? "rgba(10,30,70,.8)" : (cam >= m.s ? "rgba(255,209,102,.9)" : "rgba(220,230,255,.75)");
+    ctx.fillText(`${fmtKm(m.km).toUpperCase()} · ${m.label.toUpperCase()}`, 18, y - 4);
+  }
+
+  // moon
+  const my = yOf(MAXS + 3.5);
+  if (my > -200){
+    ctx.fillStyle = "#d9dbe3"; ctx.beginPath(); ctx.arc(rx, my, 90, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "rgba(120,125,145,.45)";
+    [[-30,-20,18],[25,10,12],[-10,35,9],[40,-35,10],[-45,20,7]].forEach(([dx,dy,r]) => { ctx.beginPath(); ctx.arc(rx+dx, my+dy, r, 0, 6.283); ctx.fill(); });
+  }
+
+  // ground + pad
+  const gy = yOf(0);
+  if (gy < H + 10){
+    ctx.fillStyle = "#1f3a32";
+    ctx.beginPath(); ctx.moveTo(0, gy+8);
+    for (let x=0; x<=W; x+=40) ctx.lineTo(x, gy + 8 - 14*Math.sin(x/170) - 8*Math.sin(x/53));
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill();
+    ctx.fillStyle = "#3b4658"; ctx.fillRect(rx-46, gy-2, 92, 10);
+    ctx.strokeStyle = "#6b7890"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(rx+28, gy); ctx.lineTo(rx+28, gy-84); ctx.lineTo(rx+16, gy-84);
+    for (let k=0;k<6;k++){ ctx.moveTo(rx+28, gy-k*14); ctx.lineTo(rx+38, gy-k*14-14); }
+    ctx.moveTo(rx+38, gy); ctx.lineTo(rx+38, gy-84); ctx.stroke(); ctx.lineWidth = 1;
+  }
+
+  // particles
+  if (thrust && !reduce) for (let k=0;k<3;k++) particles.push({x:rx+(Math.random()-.5)*8, y:ry+40, vx:(Math.random()-.5)*40, vy:120+Math.random()*90, life:0, max:.7+Math.random()*.5});
+  for (let i=particles.length-1;i>=0;i--){
+    const p = particles[i]; p.life += dt; if (p.life > p.max){ particles.splice(i,1); continue; }
+    p.x += p.vx*dt; p.y += p.vy*dt; const t = p.life/p.max;
+    ctx.fillStyle = t < .25 ? `rgba(255,${200-t*300|0},90,${1-t})` : `rgba(190,195,210,${(1-t)*.5})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 3 + t*12, 0, 6.283); ctx.fill();
+  }
+
+  // rocket
+  ctx.save(); ctx.translate(rx, ry);
+  const fl = thrust ? 26 + Math.random()*14 : (cam > 0 ? 8 + Math.random()*4 : 0);
+  if (fl){
+    const fg = ctx.createLinearGradient(0,30,0,30+fl);
+    fg.addColorStop(0,"#FFF3C4"); fg.addColorStop(.4,"#FFD166"); fg.addColorStop(1,"rgba(255,143,63,0)");
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(-8,30); ctx.quadraticCurveTo(0,30+fl*1.4,8,30); ctx.fill();
+  }
+  ctx.fillStyle = "#FF8F3F";
+  ctx.beginPath(); ctx.moveTo(-11,14); ctx.lineTo(-22,34); ctx.lineTo(-11,30); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(11,14); ctx.lineTo(22,34); ctx.lineTo(11,30); ctx.fill();
+  ctx.fillStyle = "#F2F4FA";
+  ctx.beginPath(); ctx.moveTo(-11,30); ctx.lineTo(-11,-14); ctx.quadraticCurveTo(-11,-34,0,-44); ctx.quadraticCurveTo(11,-34,11,-14); ctx.lineTo(11,30); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#FF8F3F"; ctx.beginPath(); ctx.moveTo(-9,-26); ctx.quadraticCurveTo(0,-30,9,-26); ctx.quadraticCurveTo(7,-36,0,-44); ctx.quadraticCurveTo(-7,-36,-9,-26); ctx.fill();
+  ctx.fillStyle = "#1A2A5E"; ctx.beginPath(); ctx.arc(0,-8,5,0,6.283); ctx.fill();
+  ctx.strokeStyle = "#9aa6c4"; ctx.beginPath(); ctx.moveTo(-11,18); ctx.lineTo(11,18); ctx.stroke();
+  ctx.restore();
+
+  // floaters
+  ctx.font = "700 22px 'Chakra Petch', sans-serif"; ctx.textBaseline = "middle";
+  const tc = {c:"#A9B6D6",u:"#5FD3B4",r:"#FFD166",x:"#FF6F91"};
+  for (let i=floaters.length-1;i>=0;i--){
+    const f = floaters[i], t = (now - f.born)/1400; if (t > 1){ floaters.splice(i,1); continue; }
+    ctx.globalAlpha = 1 - t; ctx.fillStyle = tc[f.tier] || "#fff"; ctx.fillText(f.text, rx + 34, ry - 10 - t*40);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  altEl.textContent = fmtKm(kmAt(cam));
+  scoreEl.textContent = Math.round(cam);
+  requestAnimationFrame(frame);
+}
+
+// On the public website, give search results a descriptive tab title (claude.ai keeps the short name).
+if (/github\.io$/.test(location.hostname)) document.title = "Outlier · Free daily word game";
+home();
+requestAnimationFrame(frame);
+initShared();
+</script>

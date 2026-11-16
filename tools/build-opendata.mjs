@@ -10,13 +10,13 @@ import vm from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const HTML = path.join(ROOT, "outlier.html");
+const HTML = path.join(ROOT, "index.html");
 const OUT = path.join(ROOT, "opendata.js");
 const ENDPOINT = "https://query.wikidata.org/sparql";
 const UA = "OutlierWordGame/1.0 (open-data build script; non-commercial)";
 const MAX_NEW = 350;
 
-// ---- the game's own bank and matching rules, read straight from outlier.html ----
+// ---- the game's own bank and matching rules, read straight from index.html ----
 const src = fs.readFileSync(HTML, "utf8");
 const bankSrc = src.slice(src.indexOf("const BANK = ["), src.indexOf("/* ---------------- Constants"));
 const ctx = {}; vm.createContext(ctx);

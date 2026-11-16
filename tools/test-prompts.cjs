@@ -3,7 +3,7 @@ const fs = require("fs"), path = require("path"), vm = require("vm");
 const root = path.resolve(__dirname, "..");
 global.window = {};
 vm.runInThisContext(fs.readFileSync(path.join(root, "opendata.js"), "utf8"));
-const src = fs.readFileSync(path.join(root, "outlier.html"), "utf8");
+const src = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const full = src.split("<script>")[1].split("</script>")[0];
 new Function(full); console.log("syntax ok");
 const js = full.split("/* ---------------- Game state")[0];
