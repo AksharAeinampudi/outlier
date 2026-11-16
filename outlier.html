@@ -1114,7 +1114,7 @@ function submit(input, timedOut){
     : misses.length ? `Out of time after ${misses.length} ${misses.length === 1 ? "miss" : "misses"}.` : "Engine stalled, no answer in time.";
   const why = !hit ? "" : dt
     ? `<p class="note">${Math.round(dt.share*100)}% of ${dt.total} player answers to this prompt matched yours.</p>`
-    : `<p class="note">Rated from the curated list. Player data takes over once this prompt has ${MIN_DATA} answers.</p>`;
+    : db ? `<p class="note">Rated from the curated list. Player data takes over once this prompt has ${MIN_DATA} answers.</p>` : "";
   panel.innerHTML = `
   <div class="stack">
     <div class="eyebrow">${modeLabel()} · Prompt ${run.i} of ${ROUNDS}</div>
