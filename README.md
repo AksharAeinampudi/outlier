@@ -2,7 +2,9 @@
 
 A free daily word game. Each round gives you seven prompts and 25 seconds per prompt. Name something correct that few people would think of: obvious answers barely leave the launch pad, rare ones carry your rocket toward the Moon.
 
-**Play:** https://claude.ai/artifact/81AB3qdr3uYPWTEt7Aevq9
+**Play:** https://aksharaeinampudi.github.io/outlier/
+
+Also hosted as a Claude artifact, where shared player-data rarity is available: https://claude.ai/artifact/81AB3qdr3uYPWTEt7Aevq9
 
 ## How it plays
 
